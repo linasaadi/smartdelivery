@@ -1,0 +1,43 @@
+.tab-content { padding: 24px 0; }
+.full-width { width: 100%; }
+
+::ng-deep .mat-mdc-tab-header { border-bottom: 1px solid var(--border); background: #fafbfc; }
+::ng-deep .mat-mdc-tab-body-wrapper { padding-top: 0; }
+
+.tab-icon { margin-right: 6px; font-size: 18px !important; vertical-align: middle; }
+
+.list-card { background: var(--surface); border-radius: var(--r-xl); border: 1px solid var(--border); box-shadow: var(--shadow-card); overflow: hidden; }
+
+.empty-state { text-align: center; padding: 64px 24px; color: var(--text-muted); }
+.empty-state mat-icon { font-size: 56px !important; display: block; margin-bottom: 12px; opacity: .5; }
+.empty-state p { font-size: .95rem; }
+
+/* Trafic tab */
+.trafic-panel {
+  background: var(--surface);
+  border-radius: var(--r-xl);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-md);
+  padding: 28px;
+}
+.trafic-query { display: flex; gap: 12px; align-items: center; margin-bottom: 28px; }
+.trafic-result { display: flex; gap: 40px; align-items: flex-start; flex-wrap: wrap; }
+
+.gauge-wrap { text-align: center; }
+.gauge-label { font-size: .75rem; text-transform: uppercase; letter-spacing: .08em; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; }
+.gauge-ring {
+  width: 120px; height: 120px; border-radius: 50%;
+  border: 8px solid #e2e8f0;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 12px;
+  position: relative;
+}
+.gauge-ring.low    { border-color: #22c55e; }
+.gauge-ring.medium { border-color: #f59e0b; }
+.gauge-ring.high   { border-color: #ef4444; }
+.gauge-value { font-size: 2rem; font-weight: 800; color: var(--text-primary); }
+.gauge-hint { font-size: .82rem; color: var(--text-secondary); }
+
+.trafic-info { display: flex; flex-direction: column; gap: 12px; padding-top: 8px; }
+.info-row { display: flex; gap: 16px; align-items: center; font-size: .9rem; }
+.label { font-weight: 600; color: var(--text-secondary); width: 80px; }

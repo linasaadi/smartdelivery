@@ -1,0 +1,18 @@
+@import url('../../../shared/styles/list-page.css');
+
+.stat-total { --pill-color: #6366f1; }
+.stat-ok    { --pill-color: #10b981; }
+.stat-warn  { --pill-color: #f59e0b; }
+
+.driver-cell { display: flex; align-items: center; gap: 12px; }
+.driver-avatar {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #2563eb);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .75rem; font-weight: 800; color: #fff;
+  letter-spacing: .02em; flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(99,102,241,.3);
+}
+.driver-name { font-weight: 600; font-size: .875rem; color: #0f172a; }
+.driver-sub  { font-size: .75rem; color: #94a3b8; margin-top: 1px; }
+.mono { font-family: 'Courier New', monospace; letter-spacing: .04em; }

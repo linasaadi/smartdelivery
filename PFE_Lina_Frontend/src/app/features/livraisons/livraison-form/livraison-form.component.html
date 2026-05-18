@@ -1,0 +1,122 @@
+<!-- ─── Gradient header ─── -->
+<div class="dlg-header">
+  <div class="dlg-icon"><mat-icon>local_shipping</mat-icon></div>
+  <div class="dlg-titles">
+    <h2>Nouvelle livraison</h2>
+    <p>Créer un nouveau bon de livraison</p>
+  </div>
+  <button class="dlg-close-btn" type="button" (click)="cancel()">
+    <mat-icon>close</mat-icon>
+  </button>
+</div>
+
+<!-- ─── Form body ─── -->
+<mat-dialog-content>
+  <div class="dlg-body">
+
+    <!-- Planification -->
+    <div class="form-section">
+      <div class="form-section-label">
+        <mat-icon>event</mat-icon> Planification
+      </div>
+      <mat-form-field appearance="outline" class="form-full">
+        <mat-label>Date de livraison prévue</mat-label>
+        <mat-icon matPrefix>event</mat-icon>
+        <input matInput [matDatepicker]="picker" [(ngModel)]="dateLivraisonPrevue" required>
+        <mat-datepicker-toggle matSuffix [for]="picker" />
+        <mat-datepicker #picker />
+      </mat-form-field>
+    </div>
+
+    <!-- Assignation -->
+    <div class="form-section">
+      <div class="form-section-label">
+        <mat-icon>swap_horiz</mat-icon> Assignation
+      </div>
+      <div class="form-row-2">
+        <mat-form-field appearance="outline">
+          <mat-label>Camion *</mat-label>
+          <mat-icon matPrefix>directions_car</mat-icon>
+          <mat-select [(ngModel)]="camionId" required placeholder="Sélectionner un camion">
+            @for (c of camions; track c.id) {
+              <mat-option [value]="c.id">{{ c.immatriculation }} · {{ c.marque }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Destination *</mat-label>
+          <mat-icon matPrefix>place</mat-icon>
+          <mat-select [(ngModel)]="destinationId" required placeholder="Sélectionner une destination">
+            @for (d of destinations; track d.id) {
+              <mat-option [value]="d.id">{{ d.ville }} · {{ d.adresse }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </div>
+
+    <!-- Produits -->
+    <div class="form-section">
+      <div class="form-section-label" style="display:flex;justify-content:space-between;align-items:center">
+        <span><mat-icon>inventory_2</mat-icon> Produits *</span>
+        <button type="button" mat-icon-button (click)="ajouterLigne()" matTooltip="Ajouter un produit">
+          <mat-icon>add_circle_outline</mat-icon>
+        </button>
+      </div>
+      @for (ligne of lignes; track $index) {
+        <div class="form-row-2" style="align-items:center;gap:8px">
+          <mat-form-field appearance="outline">
+            <mat-label>Produit</mat-label>
+            <mat-select [(ngModel)]="ligne.produitId">
+              @for (p of produits; track p.id) {
+                <mat-option [value]="p.id">{{ p.nom }} ({{ p.prixUnitaire | number:'1.2-2' }} €/u)</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="outline" style="max-width:100px">
+            <mat-label>Qté</mat-label>
+            <input matInput type="number" [(ngModel)]="ligne.quantite" min="1">
+          </mat-form-field>
+          @if (lignes.length > 1) {
+            <button type="button" mat-icon-button (click)="retirerLigne($index)" matTooltip="Retirer">
+              <mat-icon style="color:#ef4444">remove_circle_outline</mat-icon>
+            </button>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Notes -->
+    <div class="form-section last">
+      <div class="form-section-label">
+        <mat-icon>notes</mat-icon> Notes
+      </div>
+      <mat-form-field appearance="outline" class="form-full">
+        <mat-label>Notes / Instructions</mat-label>
+        <mat-icon matPrefix>sticky_note_2</mat-icon>
+        <textarea matInput [(ngModel)]="notes" rows="3"
+                  placeholder="Instructions spéciales, informations de contact..."></textarea>
+      </mat-form-field>
+    </div>
+
+    @if (error) {
+      <div class="dlg-error">
+        <mat-icon>error_outline</mat-icon>
+        <span>{{ error }}</span>
+      </div>
+    }
+  </div>
+</mat-dialog-content>
+
+<!-- ─── Actions ─── -->
+<mat-dialog-actions class="dlg-actions">
+  <button class="btn-cancel" type="button" (click)="cancel()">Annuler</button>
+  <button class="btn-save" type="button" (click)="save()" [disabled]="loading">
+    @if (loading) {
+      <mat-spinner diameter="16" />
+    } @else {
+      <mat-icon>add_circle</mat-icon>
+    }
+    Créer la livraison
+  </button>
+</mat-dialog-actions>

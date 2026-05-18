@@ -1,0 +1,90 @@
+<div class="page-header">
+  <h1>Optimisation des routes</h1>
+  <p>Calcul de la route la plus courte, la plus rapide ou multi-arrêts</p>
+</div>
+
+<div class="optimizer-layout">
+  <!-- Controls -->
+  <div class="controls-col">
+    <!-- Départ & Destination -->
+    <mat-card>
+      <mat-card-header><mat-card-title>Point de départ</mat-card-title></mat-card-header>
+      <mat-card-content>
+        <div class="coord-row">
+          <mat-form-field appearance="outline"><mat-label>Latitude</mat-label><input matInput type="number" [(ngModel)]="depart.latitude"></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Longitude</mat-label><input matInput type="number" [(ngModel)]="depart.longitude"></mat-form-field>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card>
+      <mat-card-header><mat-card-title>Destination</mat-card-title></mat-card-header>
+      <mat-card-content>
+        <div class="coord-row">
+          <mat-form-field appearance="outline"><mat-label>Latitude</mat-label><input matInput type="number" [(ngModel)]="destination.latitude"></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Longitude</mat-label><input matInput type="number" [(ngModel)]="destination.longitude"></mat-form-field>
+        </div>
+        <div class="btn-row">
+          <button mat-raised-button color="primary" (click)="shortest()" [disabled]="loading">
+            <mat-icon>straighten</mat-icon> Plus courte
+          </button>
+          <button mat-raised-button color="accent" (click)="fastest()" [disabled]="loading">
+            <mat-icon>speed</mat-icon> Plus rapide
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Multi-stop -->
+    <mat-card>
+      <mat-card-header><mat-card-title>Arrêts intermédiaires</mat-card-title></mat-card-header>
+      <mat-card-content>
+        <div class="stop-input">
+          <mat-form-field appearance="outline"><mat-label>Nom</mat-label><input matInput [(ngModel)]="newStop.nom"></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Lat</mat-label><input matInput type="number" [(ngModel)]="newStop.latitude"></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Lng</mat-label><input matInput type="number" [(ngModel)]="newStop.longitude"></mat-form-field>
+          <button mat-icon-button color="primary" (click)="addStop()"><mat-icon>add_circle</mat-icon></button>
+        </div>
+        @for (s of stops; track $index) {
+          <div class="stop-chip">
+            <mat-icon>place</mat-icon>
+            <span>{{ s.nom || ('Arrêt ' + ($index+1)) }} ({{ s.latitude }}, {{ s.longitude }})</span>
+            <button mat-icon-button color="warn" (click)="removeStop($index)"><mat-icon>close</mat-icon></button>
+          </div>
+        }
+        @if (stops.length > 0) {
+          <button mat-raised-button color="primary" class="full-width" (click)="multiStop()" [disabled]="loading">
+            <mat-icon>route</mat-icon> Optimiser l'ordre ({{ stops.length }} arrêts)
+          </button>
+        }
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Result -->
+    @if (result) {
+      <mat-card class="result-card">
+        <mat-card-header><mat-card-title>Résultat</mat-card-title></mat-card-header>
+        <mat-card-content>
+          <div class="result-row"><mat-icon color="primary">straighten</mat-icon><span>Distance : <strong>{{ result.distanceKm | number:'1.1-1' }} km</strong></span></div>
+          <div class="result-row"><mat-icon color="accent">timer</mat-icon><span>Durée : <strong>{{ result.dureeEstimeeMinutes }} min</strong></span></div>
+          <div class="result-row"><mat-icon>schedule</mat-icon><span>ETA : <strong>{{ result.eta | date:'dd/MM/yyyy HH:mm' }}</strong></span></div>
+          @if (result.facteurTrafic) {
+            <div class="result-row"><mat-icon color="warn">traffic</mat-icon><span>Facteur trafic : <strong>{{ result.facteurTrafic }}</strong></span></div>
+          }
+          @if (result.ordreOptimal && result.ordreOptimal.length > 0) {
+            <mat-divider style="margin: 12px 0" />
+            <p class="section-title">Ordre optimal des arrêts</p>
+            @for (a of result.ordreOptimal; track a.ordre) {
+              <div class="order-item"><span class="order-num">{{ a.ordre }}</span>{{ a.nom ?? (a.latitude + ', ' + a.longitude) }}</div>
+            }
+          }
+        </mat-card-content>
+      </mat-card>
+    }
+  </div>
+
+  <!-- Map -->
+  <div class="map-col">
+    <div id="route-map" class="map-container" style="height: 100%;"></div>
+  </div>
+</div>

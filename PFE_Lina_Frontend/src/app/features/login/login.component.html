@@ -1,0 +1,75 @@
+<div class="login-page">
+  <!-- Panneau gauche décoratif -->
+  <div class="login-brand">
+    <div class="brand-content">
+      <div class="brand-logo">
+        <mat-icon>local_shipping</mat-icon>
+      </div>
+      <h1>SmartDelivery</h1>
+      <p>Système de gestion et d'optimisation de livraisons pour flotte de camions</p>
+      <div class="brand-features">
+        <div class="feature-item"><mat-icon>route</mat-icon><span>Optimisation des routes</span></div>
+        <div class="feature-item"><mat-icon>gps_fixed</mat-icon><span>Tracking temps réel</span></div>
+        <div class="feature-item"><mat-icon>analytics</mat-icon><span>Rapports & Analytics</span></div>
+        <div class="feature-item"><mat-icon>notifications_active</mat-icon><span>Alertes intelligentes</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Formulaire -->
+  <div class="login-form-panel">
+    <div class="login-form-container">
+      <div class="form-header">
+        <h2>Connexion</h2>
+        <p>Accédez à votre tableau de bord</p>
+      </div>
+
+      <form (ngSubmit)="submit()" #f="ngForm">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Adresse email</mat-label>
+          <mat-icon matPrefix>email</mat-icon>
+          <input matInput type="email" [(ngModel)]="email" name="email"
+                 placeholder="exemple@smartdelivery.tn" required autocomplete="email" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Mot de passe</mat-label>
+          <mat-icon matPrefix>lock</mat-icon>
+          <input matInput [type]="showPass ? 'text' : 'password'"
+                 [(ngModel)]="password" name="password" required autocomplete="current-password" />
+          <button mat-icon-button matSuffix type="button" (click)="showPass = !showPass">
+            <mat-icon>{{ showPass ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+        </mat-form-field>
+
+        @if (error()) {
+          <div class="error-banner">
+            <mat-icon>error_outline</mat-icon>
+            <span>{{ error() }}</span>
+          </div>
+        }
+
+        <button mat-raised-button color="primary" type="submit"
+                class="submit-btn" [disabled]="loading() || !email || !password">
+          @if (loading()) {
+            <mat-spinner diameter="20" />
+            <span>Connexion en cours...</span>
+          } @else {
+            <mat-icon>login</mat-icon>
+            <span>Se connecter</span>
+          }
+        </button>
+      </form>
+
+      <div class="login-hint">
+        <mat-icon>info_outline</mat-icon>
+        <span>Compte admin : <strong>lina.saadi&#64;gmail.com</strong> / <strong>lina</strong></span>
+      </div>
+
+      <div class="register-link">
+        Pas encore de compte ?
+        <a routerLink="/register">Créer un compte</a>
+      </div>
+    </div>
+  </div>
+</div>

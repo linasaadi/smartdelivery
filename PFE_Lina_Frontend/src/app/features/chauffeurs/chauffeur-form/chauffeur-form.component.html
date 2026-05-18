@@ -1,0 +1,94 @@
+<!-- ─── Gradient header ─── -->
+<div class="dlg-header">
+  <div class="dlg-icon"><mat-icon>person</mat-icon></div>
+  <div class="dlg-titles">
+    <h2>{{ isEdit ? 'Modifier le chauffeur' : 'Nouveau chauffeur' }}</h2>
+    <p>{{ isEdit ? 'Mettre à jour le profil du chauffeur' : 'Enregistrer un nouveau chauffeur dans la flotte' }}</p>
+  </div>
+  <button class="dlg-close-btn" type="button" (click)="cancel()">
+    <mat-icon>close</mat-icon>
+  </button>
+</div>
+
+<!-- ─── Form body ─── -->
+<mat-dialog-content>
+  <div class="dlg-body">
+
+    <!-- Identité -->
+    <div class="form-section">
+      <div class="form-section-label">
+        <mat-icon>badge</mat-icon> Identité
+      </div>
+      <div class="form-row-2">
+        <mat-form-field appearance="outline">
+          <mat-label>Prénom</mat-label>
+          <mat-icon matPrefix>person_outline</mat-icon>
+          <input matInput [(ngModel)]="form.prenom" required placeholder="Mohamed">
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Nom</mat-label>
+          <mat-icon matPrefix>person</mat-icon>
+          <input matInput [(ngModel)]="form.nom" required placeholder="Ben Ali">
+        </mat-form-field>
+      </div>
+    </div>
+
+    <!-- Informations professionnelles -->
+    <div class="form-section">
+      <div class="form-section-label">
+        <mat-icon>work</mat-icon> Informations professionnelles
+      </div>
+      <mat-form-field appearance="outline" class="form-full">
+        <mat-label>Numéro de permis</mat-label>
+        <mat-icon matPrefix>credit_card</mat-icon>
+        <input matInput [(ngModel)]="form.numeroPermis" required placeholder="TN-123456">
+      </mat-form-field>
+      <div class="form-row-2">
+        <mat-form-field appearance="outline">
+          <mat-label>Téléphone</mat-label>
+          <mat-icon matPrefix>phone</mat-icon>
+          <input matInput [(ngModel)]="form.telephone" placeholder="+216 XX XXX XXX">
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Date d'embauche</mat-label>
+          <mat-icon matPrefix>event</mat-icon>
+          <input matInput [matDatepicker]="dp" [(ngModel)]="form.dateEmbauche">
+          <mat-datepicker-toggle matSuffix [for]="dp" />
+          <mat-datepicker #dp />
+        </mat-form-field>
+      </div>
+    </div>
+
+    <!-- Contact -->
+    <div class="form-section last">
+      <div class="form-section-label">
+        <mat-icon>contact_mail</mat-icon> Contact
+      </div>
+      <mat-form-field appearance="outline" class="form-full">
+        <mat-label>Adresse email</mat-label>
+        <mat-icon matPrefix>email</mat-icon>
+        <input matInput type="email" [(ngModel)]="form.email" placeholder="chauffeur@smartdelivery.tn">
+      </mat-form-field>
+    </div>
+
+    @if (error) {
+      <div class="dlg-error">
+        <mat-icon>error_outline</mat-icon>
+        <span>{{ error }}</span>
+      </div>
+    }
+  </div>
+</mat-dialog-content>
+
+<!-- ─── Actions ─── -->
+<mat-dialog-actions class="dlg-actions">
+  <button class="btn-cancel" type="button" (click)="cancel()">Annuler</button>
+  <button class="btn-save" type="button" (click)="save()" [disabled]="loading">
+    @if (loading) {
+      <mat-spinner diameter="16" />
+    } @else {
+      <mat-icon>{{ isEdit ? 'save' : 'person_add' }}</mat-icon>
+    }
+    {{ isEdit ? 'Enregistrer' : 'Créer le chauffeur' }}
+  </button>
+</mat-dialog-actions>

@@ -1,0 +1,21 @@
+@import url('../../../shared/styles/list-page.css');
+
+.stat-total  { --pill-color: #6366f1; }
+.stat-blue   { --pill-color: #3b82f6; }
+.stat-ok     { --pill-color: #10b981; }
+.stat-warn   { --pill-color: #f59e0b; }
+.stat-danger { --pill-color: #ef4444; }
+
+.ref-cell { display: flex; align-items: center; gap: 8px; }
+.ref-dot  {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #2563eb);
+  flex-shrink: 0;
+}
+.ref-code { font-family: 'Courier New', monospace; font-size: .85rem; color: #0f172a; letter-spacing: .04em; }
+
+.dest-cell { display: flex; align-items: center; gap: 4px; font-size: .85rem; }
+.dest-icon { font-size: 14px !important; color: #94a3b8; }
+
+.cost-cell { font-weight: 700; color: #059669; font-size: .875rem; }
+.mono { font-family: 'Courier New', monospace; letter-spacing: .04em; }

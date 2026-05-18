@@ -1,0 +1,21 @@
+## Fichiers sensibles — NE JAMAIS COMMITER
+**/appsettings.Development.json
+**/appsettings.Production.json
+**/*.user
+**/.env
+
+## Build
+**/bin/
+**/obj/
+
+## Visual Studio
+.vs/
+*.suo
+*.user
+
+## Riders / JetBrains
+.idea/
+
+## OS
+.DS_Store
+Thumbs.db

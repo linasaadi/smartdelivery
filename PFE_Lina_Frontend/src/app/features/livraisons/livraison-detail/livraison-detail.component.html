@@ -1,0 +1,133 @@
+<div class="page-header" style="display:flex; align-items:center; gap:12px;">
+  <button mat-icon-button routerLink="/livraisons"><mat-icon>arrow_back</mat-icon></button>
+  <div>
+    <h1>Livraison {{ livraison?.reference }}</h1>
+    <p>Détail et historique de la livraison</p>
+  </div>
+</div>
+
+@if (livraison) {
+  <div class="detail-grid">
+    <!-- Info card -->
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Informations générales</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="info-grid">
+          <div class="info-row"><span class="label">Statut</span><app-status-badge [statut]="livraison.statut" /></div>
+          <div class="info-row"><span class="label">Référence</span><span>{{ livraison.reference }}</span></div>
+          <div class="info-row"><span class="label">Création</span><span>{{ livraison.dateCreation | date:'dd/MM/yyyy HH:mm' }}</span></div>
+          <div class="info-row"><span class="label">Date prévue</span><span>{{ livraison.dateLivraisonPrevue | date:'dd/MM/yyyy' }}</span></div>
+          @if (livraison.dateLivraisonReelle) {
+            <div class="info-row"><span class="label">Date réelle</span><span>{{ livraison.dateLivraisonReelle | date:'dd/MM/yyyy' }}</span></div>
+          }
+          @if (livraison.eta) {
+            <div class="info-row"><span class="label">ETA</span><span>{{ livraison.eta | date:'dd/MM/yyyy HH:mm' }}</span></div>
+          }
+          <div class="info-row"><span class="label">Coût</span><span>{{ livraison.cout | number:'1.2-2' }} €</span></div>
+          @if (livraison.notes) {
+            <div class="info-row"><span class="label">Notes</span><span>{{ livraison.notes }}</span></div>
+          }
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Destination & Camion -->
+    <mat-card>
+      <mat-card-header><mat-card-title>Destination & Camion</mat-card-title></mat-card-header>
+      <mat-card-content>
+        <div class="info-grid">
+          <div class="info-row"><span class="label">Adresse</span><span>{{ livraison.destination?.adresse ?? '—' }}</span></div>
+          <div class="info-row"><span class="label">Ville</span><span>{{ livraison.destination?.ville ?? '—' }}</span></div>
+          <div class="info-row"><span class="label">Code postal</span><span>{{ livraison.destination?.codePostal ?? '—' }}</span></div>
+          <div class="info-row"><span class="label">Pays</span><span>{{ livraison.destination?.pays ?? '—' }}</span></div>
+          <mat-divider style="margin: 12px 0"></mat-divider>
+          <div class="info-row"><span class="label">Camion</span><span>{{ livraison.camion?.immatriculation ?? '—' }}</span></div>
+          <div class="info-row"><span class="label">Marque</span><span>{{ livraison.camion?.marque ?? '—' }} {{ livraison.camion?.modele }}</span></div>
+          <div class="info-row"><span class="label">Chauffeur</span><span>{{ livraison.camion?.nomChauffeur ?? '—' }}</span></div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Update statut -->
+    <mat-card>
+      <mat-card-header><mat-card-title>Mettre à jour le statut</mat-card-title></mat-card-header>
+      <mat-card-content>
+        <div style="display:flex; gap:12px; align-items:center; margin-top:8px;">
+          <mat-form-field appearance="outline" style="flex:1">
+            <mat-label>Nouveau statut</mat-label>
+            <mat-select [(ngModel)]="newStatut">
+              @for (s of statuts; track s.value) {
+                <mat-option [value]="s.value">{{ s.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <button mat-raised-button color="primary" (click)="updateStatut()">Valider</button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Tracking history -->
+  <mat-card style="margin-top: 20px;">
+    <mat-card-header><mat-card-title>Historique de tracking ({{ tracking.length }} points)</mat-card-title></mat-card-header>
+    <mat-card-content>
+      @if (tracking.length > 0) {
+        <table mat-table [dataSource]="tracking" class="full-width">
+          <ng-container matColumnDef="horodatage">
+            <th mat-header-cell *matHeaderCellDef>Horodatage</th>
+            <td mat-cell *matCellDef="let p">{{ p.horodatage | date:'dd/MM/yyyy HH:mm:ss' }}</td>
+          </ng-container>
+          <ng-container matColumnDef="latitude">
+            <th mat-header-cell *matHeaderCellDef>Latitude</th>
+            <td mat-cell *matCellDef="let p">{{ p.latitude }}</td>
+          </ng-container>
+          <ng-container matColumnDef="longitude">
+            <th mat-header-cell *matHeaderCellDef>Longitude</th>
+            <td mat-cell *matCellDef="let p">{{ p.longitude }}</td>
+          </ng-container>
+          <ng-container matColumnDef="vitesse">
+            <th mat-header-cell *matHeaderCellDef>Vitesse (km/h)</th>
+            <td mat-cell *matCellDef="let p">{{ p.vitesseKmh }}</td>
+          </ng-container>
+          <ng-container matColumnDef="adresse">
+            <th mat-header-cell *matHeaderCellDef>Adresse</th>
+            <td mat-cell *matCellDef="let p">{{ p.adresse }}</td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="trackingColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: trackingColumns;"></tr>
+        </table>
+      } @else {
+        <p class="empty-state">Aucun point de tracking enregistré.</p>
+      }
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Anomalies -->
+  @if (anomalies.length > 0) {
+    <mat-card style="margin-top: 20px;">
+      <mat-card-header><mat-card-title style="color:#dc2626">Anomalies détectées ({{ anomalies.length }})</mat-card-title></mat-card-header>
+      <mat-card-content>
+        <table mat-table [dataSource]="anomalies" class="full-width">
+          <ng-container matColumnDef="type"><th mat-header-cell *matHeaderCellDef>Type</th><td mat-cell *matCellDef="let a">{{ a.type }}</td></ng-container>
+          <ng-container matColumnDef="description"><th mat-header-cell *matHeaderCellDef>Description</th><td mat-cell *matCellDef="let a">{{ a.description }}</td></ng-container>
+          <ng-container matColumnDef="date"><th mat-header-cell *matHeaderCellDef>Détectée le</th><td mat-cell *matCellDef="let a">{{ a.dateDetection | date:'dd/MM/yyyy HH:mm' }}</td></ng-container>
+          <ng-container matColumnDef="retard"><th mat-header-cell *matHeaderCellDef>Retard (min)</th><td mat-cell *matCellDef="let a">{{ a.retardMinutes ?? '—' }}</td></ng-container>
+          <ng-container matColumnDef="resolu">
+            <th mat-header-cell *matHeaderCellDef>Résolu</th>
+            <td mat-cell *matCellDef="let a">
+              <mat-icon [style.color]="a.estResolue ? '#15803d' : '#dc2626'">
+                {{ a.estResolue ? 'check_circle' : 'cancel' }}
+              </mat-icon>
+            </td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="anomaliesColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: anomaliesColumns;"></tr>
+        </table>
+      </mat-card-content>
+    </mat-card>
+  }
+} @else {
+  <p class="empty-state">Chargement...</p>
+}

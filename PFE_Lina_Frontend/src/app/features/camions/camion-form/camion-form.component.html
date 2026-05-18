@@ -1,0 +1,99 @@
+<!-- ─── Gradient header ─── -->
+<div class="dlg-header">
+  <div class="dlg-icon"><mat-icon>directions_car</mat-icon></div>
+  <div class="dlg-titles">
+    <h2>{{ isEdit ? 'Modifier le camion' : 'Nouveau camion' }}</h2>
+    <p>{{ isEdit ? 'Mettre à jour les informations du véhicule' : 'Ajouter un nouveau véhicule à la flotte' }}</p>
+  </div>
+  <button class="dlg-close-btn" type="button" (click)="cancel()">
+    <mat-icon>close</mat-icon>
+  </button>
+</div>
+
+<!-- ─── Form body ─── -->
+<mat-dialog-content>
+  <div class="dlg-body">
+
+    <!-- Identification -->
+    <div class="form-section">
+      <div class="form-section-label">
+        <mat-icon>badge</mat-icon> Identification du véhicule
+      </div>
+      <mat-form-field appearance="outline" class="form-full">
+        <mat-label>Immatriculation</mat-label>
+        <mat-icon matPrefix>confirmation_number</mat-icon>
+        <input matInput [(ngModel)]="form.immatriculation" required placeholder="AA-123-BB">
+      </mat-form-field>
+      <div class="form-row-2">
+        <mat-form-field appearance="outline">
+          <mat-label>Marque</mat-label>
+          <mat-icon matPrefix>local_shipping</mat-icon>
+          <input matInput [(ngModel)]="form.marque" required placeholder="Mercedes">
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Modèle</mat-label>
+          <mat-icon matPrefix>directions_car</mat-icon>
+          <input matInput [(ngModel)]="form.modele" required placeholder="Actros">
+        </mat-form-field>
+      </div>
+    </div>
+
+    <!-- Capacités -->
+    <div class="form-section">
+      <div class="form-section-label">
+        <mat-icon>inventory_2</mat-icon> Capacités de charge
+      </div>
+      <div class="form-row-2">
+        <mat-form-field appearance="outline">
+          <mat-label>Capacité</mat-label>
+          <mat-icon matPrefix>scale</mat-icon>
+          <input matInput type="number" [(ngModel)]="form.capaciteKg" min="0" placeholder="20000">
+          <span matSuffix>kg</span>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Volume</mat-label>
+          <mat-icon matPrefix>crop_square</mat-icon>
+          <input matInput type="number" [(ngModel)]="form.capaciteM3" min="0" placeholder="50">
+          <span matSuffix>m³</span>
+        </mat-form-field>
+      </div>
+    </div>
+
+    <!-- Affectation -->
+    <div class="form-section last">
+      <div class="form-section-label">
+        <mat-icon>person_pin</mat-icon> Affectation
+      </div>
+      <mat-form-field appearance="outline" class="form-full">
+        <mat-label>Chauffeur assigné</mat-label>
+        <mat-icon matPrefix>person</mat-icon>
+        <mat-select [(ngModel)]="form.chauffeurId">
+          <mat-option [value]="undefined">— Aucun —</mat-option>
+          @for (c of chauffeurs; track c.id) {
+            <mat-option [value]="c.id">{{ c.prenom }} {{ c.nom }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    @if (error) {
+      <div class="dlg-error">
+        <mat-icon>error_outline</mat-icon>
+        <span>{{ error }}</span>
+      </div>
+    }
+  </div>
+</mat-dialog-content>
+
+<!-- ─── Actions ─── -->
+<mat-dialog-actions class="dlg-actions">
+  <button class="btn-cancel" type="button" (click)="cancel()">Annuler</button>
+  <button class="btn-save" type="button" (click)="save()" [disabled]="loading">
+    @if (loading) {
+      <mat-spinner diameter="16" />
+    } @else {
+      <mat-icon>{{ isEdit ? 'save' : 'add_circle' }}</mat-icon>
+    }
+    {{ isEdit ? 'Enregistrer' : 'Créer le camion' }}
+  </button>
+</mat-dialog-actions>

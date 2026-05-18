@@ -1,0 +1,123 @@
+<!-- Page header -->
+<div class="page-header">
+  <div class="header-row">
+    <div>
+      <h1>Tableau de bord</h1>
+      <p>Vue d'ensemble de votre flotte et de vos livraisons</p>
+    </div>
+    <button class="header-cta" routerLink="/livraisons">
+      <mat-icon>add</mat-icon> Nouvelle livraison
+    </button>
+  </div>
+</div>
+
+<!-- ─── KPI cards ─── -->
+<div class="kpi-grid">
+  @for (stat of stats; track stat.title) {
+    <div class="kpi-card" [style]="stat.style">
+      <div class="kpi-body">
+        <div class="kpi-label">{{ stat.title }}</div>
+        <div class="kpi-value">{{ stat.value }}</div>
+        <div class="kpi-trend">{{ stat.trend }}</div>
+      </div>
+      <div class="kpi-icon">
+        <mat-icon>{{ stat.icon }}</mat-icon>
+      </div>
+    </div>
+  }
+</div>
+
+<!-- ─── Main content row ─── -->
+<div class="content-row">
+  <!-- Dernières livraisons / urgentes -->
+  <div class="card-main">
+    <div class="card-head">
+      <div>
+        <div class="card-title">{{ enRetard > 0 ? 'Livraisons urgentes (en retard)' : 'Livraisons récentes' }}</div>
+        <div class="card-subtitle">{{ totalLivraisons }} livraison{{ totalLivraisons !== 1 ? 's' : '' }} au total</div>
+      </div>
+      <button mat-button color="primary" routerLink="/livraisons" class="see-all-btn">
+        Voir tout <mat-icon>arrow_forward</mat-icon>
+      </button>
+    </div>
+
+    <table mat-table [dataSource]="dernieresLivraisons" class="full-width dash-table">
+      <ng-container matColumnDef="reference">
+        <th mat-header-cell *matHeaderCellDef>Référence</th>
+        <td mat-cell *matCellDef="let l">
+          <div class="ref-cell">
+            <div class="ref-dot"></div>
+            <strong>{{ l.reference }}</strong>
+          </div>
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="statut">
+        <th mat-header-cell *matHeaderCellDef>Statut</th>
+        <td mat-cell *matCellDef="let l"><app-status-badge [statut]="l.statut" /></td>
+      </ng-container>
+      <ng-container matColumnDef="destination">
+        <th mat-header-cell *matHeaderCellDef>Destination</th>
+        <td mat-cell *matCellDef="let l">{{ l.destination ?? '—' }}</td>
+      </ng-container>
+      <ng-container matColumnDef="datePrevue">
+        <th mat-header-cell *matHeaderCellDef>Date prévue</th>
+        <td mat-cell *matCellDef="let l" class="date-cell">{{ l.dateLivraisonPrevue | date:'dd/MM/yyyy' }}</td>
+      </ng-container>
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+          [routerLink]="['/livraisons', row.id]" style="cursor:pointer"></tr>
+    </table>
+
+    @if (dernieresLivraisons.length === 0) {
+      <div class="empty-state">
+        <mat-icon>inbox</mat-icon>
+        <p>Aucune livraison enregistrée</p>
+      </div>
+    }
+  </div>
+
+  <!-- Sidebar cards -->
+  <div class="card-side">
+    <!-- Répartition statuts -->
+    <div class="side-card">
+      <div class="card-title" style="margin-bottom:16px">Répartition statuts</div>
+      <div class="donut-grid">
+        <div class="donut-item">
+          <div class="donut-circle" style="--c:#3b82f6">{{ enCours }}</div>
+          <div class="donut-label">En cours</div>
+        </div>
+        <div class="donut-item">
+          <div class="donut-circle" style="--c:#22c55e">{{ livrees }}</div>
+          <div class="donut-label">Livrées</div>
+        </div>
+        <div class="donut-item">
+          <div class="donut-circle" style="--c:#ef4444">{{ enRetard }}</div>
+          <div class="donut-label">En retard</div>
+        </div>
+        <div class="donut-item">
+          <div class="donut-circle" style="--c:#94a3b8">{{ enAttente }}</div>
+          <div class="donut-label">En attente</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Liens rapides -->
+    <div class="side-card">
+      <div class="card-title" style="margin-bottom:12px">Accès rapide</div>
+      <div style="display:flex; flex-direction:column; gap:8px">
+        <button mat-stroked-button routerLink="/livraisons" style="justify-content:flex-start">
+          <mat-icon>local_shipping</mat-icon> Livraisons
+        </button>
+        <button mat-stroked-button routerLink="/camions" style="justify-content:flex-start">
+          <mat-icon>directions_car</mat-icon> Flotte
+        </button>
+        <button mat-stroked-button routerLink="/tracking" style="justify-content:flex-start">
+          <mat-icon>map</mat-icon> Suivi temps réel
+        </button>
+        <button mat-stroked-button routerLink="/rapports" style="justify-content:flex-start">
+          <mat-icon>analytics</mat-icon> Rapports
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,18 @@
+.tracking-layout { display: flex; gap: 20px; height: calc(100vh - 220px); }
+.panel { width: 280px; flex-shrink: 0; overflow-y: auto; }
+.map-wrapper { flex: 1; }
+#tracking-map { height: 100%; border-radius: 12px; }
+.full-width { width: 100%; }
+
+.livraison-info { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+.info-row { display: flex; justify-content: space-between; align-items: center; font-size: .85rem; }
+.label { color: #64748b; }
+
+.camion-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f1f5f9; }
+
+/* Leaflet custom icons */
+:host ::ng-deep .camion-marker { font-size: 24px; }
+:host ::ng-deep .track-point { font-size: 18px; }
+:host ::ng-deep .track-point.start { color: #15803d; }
+:host ::ng-deep .track-point.end { color: #1d4ed8; }
+:host ::ng-deep .track-point.dest { color: #dc2626; }

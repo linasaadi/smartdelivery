@@ -1,0 +1,43 @@
+<div class="page-header">
+  <h1>Tracking en temps réel</h1>
+  <p>Positions GPS et itinéraires des camions</p>
+</div>
+
+<div class="tracking-layout">
+  <!-- Sidebar panel -->
+  <mat-card class="panel">
+    <mat-card-header><mat-card-title>Sélection</mat-card-title></mat-card-header>
+    <mat-card-content>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Livraison en cours</mat-label>
+        <mat-select [(ngModel)]="selectedLivraisonId">
+          @for (l of livraisons; track l.id) {
+            <mat-option [value]="l.id">{{ l.reference }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <button mat-raised-button color="primary" class="full-width" (click)="loadTracking()" [disabled]="!selectedLivraisonId">
+        <mat-icon>my_location</mat-icon> Afficher l'itinéraire
+      </button>
+
+      @if (selectedLivraison) {
+        <div class="livraison-info">
+          <div class="info-row"><span class="label">Référence</span><span>{{ selectedLivraison.reference }}</span></div>
+          <div class="info-row"><span class="label">Statut</span><app-status-badge [statut]="selectedLivraison.statut" /></div>
+          @if (selectedLivraison.eta) {
+            <div class="info-row"><span class="label">ETA</span><span>{{ selectedLivraison.eta | date:'HH:mm' }}</span></div>
+          }
+          <div class="info-row"><span class="label">Points GPS</span><span>{{ tracking.length }}</span></div>
+        </div>
+      }
+
+      <mat-divider style="margin: 16px 0"></mat-divider>
+      <p class="section-title">Livraisons disponibles : {{ livraisons.length }}</p>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Map -->
+  <div class="map-wrapper">
+    <div id="tracking-map" class="map-container"></div>
+  </div>
+</div>

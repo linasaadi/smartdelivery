@@ -1,0 +1,13 @@
+<Solution>
+  <Project Path="PFE_Lina/SmartDelivery.API.csproj">
+    <BuildDependency Project="SmartDelivery.Domaine/SmartDelivery.Domaine.csproj" />
+    <BuildDependency Project="SmartDelivery.Donnees/SmartDelivery.Data.csproj" />
+  </Project>
+  <Project Path="SmartDelivery.Domaine/SmartDelivery.Domaine.csproj" />
+  <Project Path="SmartDelivery.Donnees/SmartDelivery.Data.csproj">
+    <BuildDependency Project="SmartDelivery.Domaine/SmartDelivery.Domaine.csproj" />
+  </Project>
+  <Project Path="SmartDelivery.Infrastructure/SmartDelivery.Infrastructure.csproj">
+    <BuildDependency Project="SmartDelivery.Donnees/SmartDelivery.Data.csproj" />
+  </Project>
+</Solution>
