@@ -10,6 +10,8 @@ namespace SmartDelivery.Domaine.Models.DTOs
         string? NomChauffeur,
         string? ImmatriculationCamion,
         string Destination,
+        string NomProduit,
+        int Quantite,
         DateTime? DateLivraisonPrevue,
         DateTime? DateLivraisonReelle,
         DateTime? ETA,
@@ -24,14 +26,22 @@ namespace SmartDelivery.Domaine.Models.DTOs
         string Statut,
         CamionResumeDto? Camion,
         DestinationDto Destination,
-        List<LivraisonProduitDto> Produits,
+        // Produit inline
+        string NomProduit,
+        string? DescriptionProduit,
+        decimal PoidsKg,
+        decimal VolumeM3,
+        int Quantite,
+        decimal PrixUnitaire,
+        // Anomalies et autres
         List<AnomalieDto> Anomalies,
         DateTime DateCreation,
         DateTime? DateLivraisonPrevue,
         DateTime? DateLivraisonReelle,
         DateTime? ETA,
         decimal Cout,
-        string? Notes
+        string? Notes,
+        int? DispatcheurId
     );
 
     // ── Création (Dispatcher uniquement) ──────────────────────────────────────
@@ -39,20 +49,18 @@ namespace SmartDelivery.Domaine.Models.DTOs
         int CamionId,
         int DestinationId,
         DateTime DateLivraisonPrevue,
-        List<LivraisonProduitDto> Produits,
+        // Produit inline
+        string NomProduit,
+        string? DescriptionProduit,
+        decimal PoidsKg,
+        decimal VolumeM3,
+        int Quantite,
+        decimal PrixUnitaire,
         string? Notes
     );
 
     // ── Modification statut ───────────────────────────────────────────────────
     public record ModifierStatutDto(
         StatutLivraison NouveauStatut
-    );
-
-    // ── Produit dans livraison ────────────────────────────────────────────────
-    public record LivraisonProduitDto(
-        int ProduitId,
-        string? NomProduit,
-        int Quantite,
-        decimal PrixTotal
     );
 }

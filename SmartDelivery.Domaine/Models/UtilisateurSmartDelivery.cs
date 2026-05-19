@@ -6,8 +6,10 @@ namespace SmartDelivery.Domaine.Models
     {
         public string Nom { get; set; } = string.Empty;
         public string Prenom { get; set; } = string.Empty;
-        // Lien optionnel vers l'entité Chauffeur (si rôle = Chauffeur)
+        // Lien vers l'entité Chauffeur (si rôle = Chauffeur)
         public int? ChauffeurId { get; set; }
+        // Lien vers l'entité Dispatcher (si rôle = Dispatcher)
+        public int? DispatcherId { get; set; }
     }
 
     public static class Roles

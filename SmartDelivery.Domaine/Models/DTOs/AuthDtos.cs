@@ -8,7 +8,8 @@ namespace SmartDelivery.Domaine.Models.DTOs
         string Nom,
         string Prenom,
         string Role,
-        int? ChauffeurId = null);
+        int? ChauffeurId   = null,
+        int? DispatcherId  = null);
 
     public record TokenResponseDto(
         string Token,
@@ -16,5 +17,18 @@ namespace SmartDelivery.Domaine.Models.DTOs
         string Nom,
         string Prenom,
         string Role,
-        DateTime Expiration);
+        DateTime Expiration,
+        int? ChauffeurId   = null,
+        int? DispatcherId  = null);
+
+    public record UtilisateurDto(
+        string Id,
+        string Email,
+        string Nom,
+        string Prenom,
+        string Role,
+        int? ChauffeurId  = null,
+        int? DispatcherId = null);
+
+    public record ChangerRoleDto(string NouveauRole);
 }

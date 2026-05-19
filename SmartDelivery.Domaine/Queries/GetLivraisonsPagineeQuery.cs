@@ -9,6 +9,7 @@ namespace SmartDelivery.Domaine.Queries
         int              TaillePage  = 20,
         StatutLivraison? Statut      = null,
         int?             CamionId    = null,
-        string?          Recherche   = null
+        string?          Recherche   = null,
+        int?             ChauffeurId = null
     ) : IRequest<PageDonnees<LivraisonResumeDto>>;
 }

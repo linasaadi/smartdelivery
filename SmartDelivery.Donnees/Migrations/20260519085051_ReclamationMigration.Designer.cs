@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SmartDelivery.Donnees.Context;
 
@@ -11,9 +12,11 @@ using SmartDelivery.Donnees.Context;
 namespace SmartDelivery.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260519085051_ReclamationMigration")]
+    partial class ReclamationMigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -333,43 +336,6 @@ namespace SmartDelivery.Data.Migrations
                     b.ToTable("Destinations");
                 });
 
-            modelBuilder.Entity("SmartDelivery.Domaine.Models.Dispatcher", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("DatePriseEnCharge")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Email")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Nom")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("Prenom")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("Telephone")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("ZoneResponsabilite")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Dispatchers");
-                });
-
             modelBuilder.Entity("SmartDelivery.Domaine.Models.Livraison", b =>
                 {
                     b.Property<int>("Id")
@@ -393,35 +359,14 @@ namespace SmartDelivery.Data.Migrations
                     b.Property<DateTime?>("DateLivraisonReelle")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("DescriptionProduit")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
                     b.Property<int>("DestinationId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("DispatcheurId")
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("ETA")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("NomProduit")
-                        .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
-
                     b.Property<string>("Notes")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal>("PoidsKg")
-                        .HasColumnType("decimal(10,3)");
-
-                    b.Property<decimal>("PrixUnitaire")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("Quantite")
-                        .HasColumnType("int");
 
                     b.Property<string>("RaisonRefus")
                         .HasColumnType("nvarchar(max)");
@@ -437,9 +382,6 @@ namespace SmartDelivery.Data.Migrations
                         .HasColumnType("nvarchar(450)")
                         .HasDefaultValue("EnAttente");
 
-                    b.Property<decimal>("VolumeM3")
-                        .HasColumnType("decimal(10,3)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("CamionId")
@@ -450,9 +392,6 @@ namespace SmartDelivery.Data.Migrations
 
                     b.HasIndex("DestinationId");
 
-                    b.HasIndex("DispatcheurId")
-                        .HasDatabaseName("IX_Livraisons_DispatcheurId");
-
                     b.HasIndex("Statut")
                         .HasDatabaseName("IX_Livraisons_Statut");
 
@@ -460,6 +399,27 @@ namespace SmartDelivery.Data.Migrations
                         .HasDatabaseName("IX_Livraisons_Statut_DatePrevue");
 
                     b.ToTable("Livraisons");
+                });
+
+            modelBuilder.Entity("SmartDelivery.Domaine.Models.LivraisonProduit", b =>
+                {
+                    b.Property<int>("LivraisonId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProduitId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("PrixTotal")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("Quantite")
+                        .HasColumnType("int");
+
+                    b.HasKey("LivraisonId", "ProduitId");
+
+                    b.HasIndex("ProduitId");
+
+                    b.ToTable("LivraisonProduits");
                 });
 
             modelBuilder.Entity("SmartDelivery.Domaine.Models.PointTracking", b =>
@@ -494,6 +454,36 @@ namespace SmartDelivery.Data.Migrations
                         .HasDatabaseName("IX_PointsTracking_LivraisonId_Horodatage");
 
                     b.ToTable("PointsTracking");
+                });
+
+            modelBuilder.Entity("SmartDelivery.Domaine.Models.Produit", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Nom")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<double>("PoidsKg")
+                        .HasColumnType("float");
+
+                    b.Property<decimal>("PrixUnitaire")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<double>("VolumeM3")
+                        .HasColumnType("float");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Produits");
                 });
 
             modelBuilder.Entity("SmartDelivery.Domaine.Models.Reclamation", b =>
@@ -564,9 +554,6 @@ namespace SmartDelivery.Data.Migrations
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("DispatcherId")
-                        .HasColumnType("int");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
@@ -715,16 +702,28 @@ namespace SmartDelivery.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("SmartDelivery.Domaine.Models.Dispatcher", "Dispatcher")
-                        .WithMany("Livraisons")
-                        .HasForeignKey("DispatcheurId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.Navigation("Camion");
 
                     b.Navigation("Destination");
+                });
 
-                    b.Navigation("Dispatcher");
+            modelBuilder.Entity("SmartDelivery.Domaine.Models.LivraisonProduit", b =>
+                {
+                    b.HasOne("SmartDelivery.Domaine.Models.Livraison", "Livraison")
+                        .WithMany("LivraisonProduits")
+                        .HasForeignKey("LivraisonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SmartDelivery.Domaine.Models.Produit", "Produit")
+                        .WithMany("LivraisonProduits")
+                        .HasForeignKey("ProduitId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Livraison");
+
+                    b.Navigation("Produit");
                 });
 
             modelBuilder.Entity("SmartDelivery.Domaine.Models.PointTracking", b =>
@@ -771,16 +770,18 @@ namespace SmartDelivery.Data.Migrations
                     b.Navigation("Livraisons");
                 });
 
-            modelBuilder.Entity("SmartDelivery.Domaine.Models.Dispatcher", b =>
-                {
-                    b.Navigation("Livraisons");
-                });
-
             modelBuilder.Entity("SmartDelivery.Domaine.Models.Livraison", b =>
                 {
                     b.Navigation("Anomalies");
 
+                    b.Navigation("LivraisonProduits");
+
                     b.Navigation("PointsTracking");
+                });
+
+            modelBuilder.Entity("SmartDelivery.Domaine.Models.Produit", b =>
+                {
+                    b.Navigation("LivraisonProduits");
                 });
 #pragma warning restore 612, 618
         }

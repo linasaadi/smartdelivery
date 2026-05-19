@@ -9,14 +9,14 @@ namespace SmartDelivery.Donnees.Context
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
-        public DbSet<Livraison> Livraisons { get; set; }
-        public DbSet<Camion> Camions { get; set; }
-        public DbSet<Chauffeur> Chauffeurs { get; set; }
+        public DbSet<Livraison>   Livraisons   { get; set; }
+        public DbSet<Camion>      Camions      { get; set; }
+        public DbSet<Chauffeur>   Chauffeurs   { get; set; }
+        public DbSet<Dispatcher>  Dispatchers  { get; set; }
         public DbSet<Destination> Destinations { get; set; }
-        public DbSet<Produit> Produits { get; set; }
-        public DbSet<LivraisonProduit> LivraisonProduits { get; set; }
         public DbSet<PointTracking> PointsTracking { get; set; }
-        public DbSet<Anomalie> Anomalies { get; set; }
+        public DbSet<Anomalie>    Anomalies    { get; set; }
+        public DbSet<Reclamation> Reclamations { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -32,6 +32,13 @@ namespace SmartDelivery.Donnees.Context
                       .HasConversion<string>()
                       .HasDefaultValue(StatutLivraison.EnAttente);
 
+                // Produit inline
+                entite.Property(l => l.NomProduit).IsRequired().HasMaxLength(150);
+                entite.Property(l => l.DescriptionProduit).HasMaxLength(500);
+                entite.Property(l => l.PoidsKg).HasColumnType("decimal(10,3)");
+                entite.Property(l => l.VolumeM3).HasColumnType("decimal(10,3)");
+                entite.Property(l => l.PrixUnitaire).HasColumnType("decimal(18,2)");
+
                 entite.HasOne(l => l.Camion)
                       .WithMany(c => c.Livraisons)
                       .HasForeignKey(l => l.CamionId)
@@ -42,18 +49,30 @@ namespace SmartDelivery.Donnees.Context
                       .HasForeignKey(l => l.DestinationId)
                       .OnDelete(DeleteBehavior.Restrict);
 
+                entite.HasOne(l => l.Dispatcher)
+                      .WithMany(d => d.Livraisons)
+                      .HasForeignKey(l => l.DispatcheurId)
+                      .OnDelete(DeleteBehavior.SetNull);
+
                 entite.Navigation(l => l.Camion).AutoInclude();
                 entite.Navigation(l => l.Destination).AutoInclude();
 
-                // Index de performance pour les filtres fréquents du dashboard
-                entite.HasIndex(l => l.Statut)
-                      .HasDatabaseName("IX_Livraisons_Statut");
-                entite.HasIndex(l => l.DateCreation)
-                      .HasDatabaseName("IX_Livraisons_DateCreation");
+                entite.HasIndex(l => l.Statut).HasDatabaseName("IX_Livraisons_Statut");
+                entite.HasIndex(l => l.DateCreation).HasDatabaseName("IX_Livraisons_DateCreation");
                 entite.HasIndex(l => new { l.Statut, l.DateLivraisonPrevue })
                       .HasDatabaseName("IX_Livraisons_Statut_DatePrevue");
-                entite.HasIndex(l => l.CamionId)
-                      .HasDatabaseName("IX_Livraisons_CamionId");
+                entite.HasIndex(l => l.CamionId).HasDatabaseName("IX_Livraisons_CamionId");
+                entite.HasIndex(l => l.DispatcheurId).HasDatabaseName("IX_Livraisons_DispatcheurId");
+            });
+
+            // ── Dispatcher ───────────────────────────────────────────────────
+            modelBuilder.Entity<Dispatcher>(entite =>
+            {
+                entite.HasKey(d => d.Id);
+                entite.Property(d => d.Nom).IsRequired().HasMaxLength(100);
+                entite.Property(d => d.Prenom).IsRequired().HasMaxLength(100);
+                entite.Property(d => d.Telephone).HasMaxLength(20);
+                entite.Property(d => d.ZoneResponsabilite).HasMaxLength(200);
             });
 
             // ── Camion ───────────────────────────────────────────────────────
@@ -73,11 +92,8 @@ namespace SmartDelivery.Donnees.Context
 
                 entite.Navigation(c => c.Chauffeur).AutoInclude();
 
-                // Index pour les requêtes "camions disponibles" (très fréquentes)
-                entite.HasIndex(c => c.Statut)
-                      .HasDatabaseName("IX_Camions_Statut");
-                entite.HasIndex(c => c.ChauffeurId)
-                      .HasDatabaseName("IX_Camions_ChauffeurId");
+                entite.HasIndex(c => c.Statut).HasDatabaseName("IX_Camions_Statut");
+                entite.HasIndex(c => c.ChauffeurId).HasDatabaseName("IX_Camions_ChauffeurId");
             });
 
             // ── Chauffeur ────────────────────────────────────────────────────
@@ -100,31 +116,6 @@ namespace SmartDelivery.Donnees.Context
                 entite.Property(d => d.CodePostal).HasMaxLength(10);
             });
 
-            // ── Produit ──────────────────────────────────────────────────────
-            modelBuilder.Entity<Produit>(entite =>
-            {
-                entite.HasKey(p => p.Id);
-                entite.Property(p => p.Nom).IsRequired().HasMaxLength(150);
-                entite.Property(p => p.PrixUnitaire).HasColumnType("decimal(18,2)");
-            });
-
-            // ── LivraisonProduit (table de jointure N:N) ─────────────────────
-            modelBuilder.Entity<LivraisonProduit>(entite =>
-            {
-                entite.HasKey(lp => new { lp.LivraisonId, lp.ProduitId });
-                entite.Property(lp => lp.PrixTotal).HasColumnType("decimal(18,2)");
-
-                entite.HasOne(lp => lp.Livraison)
-                      .WithMany(l => l.LivraisonProduits)
-                      .HasForeignKey(lp => lp.LivraisonId)
-                      .OnDelete(DeleteBehavior.Cascade);
-
-                entite.HasOne(lp => lp.Produit)
-                      .WithMany(p => p.LivraisonProduits)
-                      .HasForeignKey(lp => lp.ProduitId)
-                      .OnDelete(DeleteBehavior.Restrict);
-            });
-
             // ── PointTracking ────────────────────────────────────────────────
             modelBuilder.Entity<PointTracking>(entite =>
             {
@@ -134,7 +125,6 @@ namespace SmartDelivery.Donnees.Context
                       .HasForeignKey(pt => pt.LivraisonId)
                       .OnDelete(DeleteBehavior.Cascade);
 
-                // Index composite critique pour l'historique de tracking
                 entite.HasIndex(pt => new { pt.LivraisonId, pt.Horodatage })
                       .HasDatabaseName("IX_PointsTracking_LivraisonId_Horodatage");
             });
@@ -151,9 +141,33 @@ namespace SmartDelivery.Donnees.Context
                       .HasForeignKey(a => a.LivraisonId)
                       .OnDelete(DeleteBehavior.Cascade);
 
-                // Index pour filtrer les anomalies ouvertes par livraison
                 entite.HasIndex(a => new { a.LivraisonId, a.EstResolue })
                       .HasDatabaseName("IX_Anomalies_LivraisonId_EstResolue");
+            });
+
+            // ── Reclamation ───────────────────────────────────────────────────
+            modelBuilder.Entity<Reclamation>(entite =>
+            {
+                entite.HasKey(r => r.Id);
+                entite.Property(r => r.Titre).IsRequired().HasMaxLength(200);
+                entite.Property(r => r.Description).IsRequired().HasMaxLength(2000);
+                entite.Property(r => r.ReponseAdmin).HasMaxLength(2000);
+                entite.Property(r => r.Statut)
+                      .HasConversion<string>()
+                      .HasDefaultValue(SmartDelivery.Domaine.Models.Enums.StatutReclamation.EnAttente);
+
+                entite.HasOne(r => r.Utilisateur)
+                      .WithMany()
+                      .HasForeignKey(r => r.UtilisateurId)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entite.HasOne(r => r.Livraison)
+                      .WithMany()
+                      .HasForeignKey(r => r.LivraisonId)
+                      .OnDelete(DeleteBehavior.SetNull);
+
+                entite.HasIndex(r => r.UtilisateurId).HasDatabaseName("IX_Reclamations_UtilisateurId");
+                entite.HasIndex(r => r.Statut).HasDatabaseName("IX_Reclamations_Statut");
             });
         }
     }

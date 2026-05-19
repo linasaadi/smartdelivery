@@ -26,6 +26,9 @@ namespace SmartDelivery.Infrastructure.Handlers.Livraisons
             if (requete.CamionId.HasValue)
                 query = query.Where(l => l.CamionId == requete.CamionId.Value);
 
+            if (requete.ChauffeurId.HasValue)
+                query = query.Where(l => l.Camion != null && l.Camion.ChauffeurId == requete.ChauffeurId.Value);
+
             if (!string.IsNullOrWhiteSpace(requete.Recherche))
             {
                 var recherche = requete.Recherche.ToLower();

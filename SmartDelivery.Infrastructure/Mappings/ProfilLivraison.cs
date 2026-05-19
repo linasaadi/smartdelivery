@@ -27,12 +27,7 @@ namespace SmartDelivery.Infrastructure.Mappings
                 .ForCtorParam("Statut", opt => opt.MapFrom(s => s.Statut.ToString()))
                 .ForCtorParam("Camion", opt => opt.MapFrom(s => s.Camion))
                 .ForCtorParam("Destination", opt => opt.MapFrom(s => s.Destination))
-                .ForCtorParam("Produits", opt => opt.MapFrom(s => s.LivraisonProduits))
                 .ForCtorParam("Anomalies", opt => opt.MapFrom(s => s.Anomalies));
-
-            CreateMap<LivraisonProduit, LivraisonProduitDto>()
-                .ForCtorParam("NomProduit", opt => opt.MapFrom(s =>
-                    s.Produit != null ? s.Produit.Nom : null));
         }
     }
 }

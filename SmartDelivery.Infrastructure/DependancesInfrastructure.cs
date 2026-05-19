@@ -11,12 +11,14 @@ using Microsoft.IdentityModel.Tokens;
 using SmartDelivery.Domaine.Commands;
 using SmartDelivery.Domaine.Interface;
 using SmartDelivery.Domaine.Models;
+using SmartDelivery.Domaine.Models.DTOs;
 using SmartDelivery.Domaine.Queries;
 using SmartDelivery.Donnees.Context;
 using SmartDelivery.Donnees.Repositories;
 using SmartDelivery.Infrastructure.Handlers.Camions;
 using SmartDelivery.Infrastructure.Handlers.Generiques;
 using SmartDelivery.Infrastructure.Handlers.Livraisons;
+using SmartDelivery.Infrastructure.Handlers.Reclamations;
 using SmartDelivery.Infrastructure.Handlers.Tracking;
 using SmartDelivery.Infrastructure.Services;
 
@@ -49,7 +51,8 @@ namespace SmartDelivery.Infrastructure
                 options.User.RequireUniqueEmail         = true;
             })
             .AddEntityFrameworkStores<ApplicationDbContext>()
-            .AddDefaultTokenProviders();
+            .AddDefaultTokenProviders()
+            .AddErrorDescriber<DescripteurErreursIdentite>();
 
             // ── JWT ──────────────────────────────────────────────────────────
             var jwtKey = configuration["Jwt:Key"];
@@ -113,10 +116,11 @@ namespace SmartDelivery.Infrastructure
             EnregistrerHandlers<Livraison>(services);
             EnregistrerHandlers<Camion>(services);
             EnregistrerHandlers<Chauffeur>(services);
+            EnregistrerHandlers<Dispatcher>(services);
             EnregistrerHandlers<Destination>(services);
-            EnregistrerHandlers<Produit>(services);
             EnregistrerHandlers<PointTracking>(services);
             EnregistrerHandlers<Anomalie>(services);
+            EnregistrerHandlers<Reclamation>(services);
 
             // ── Handlers spécifiques (tous dans Infrastructure.Handlers) ────
             services.AddScoped<IRequestHandler<ModifierStatutLivraisonCommand, bool>,
@@ -129,6 +133,12 @@ namespace SmartDelivery.Infrastructure
                 GetCamionsDisponiblesHandler>();
             services.AddScoped<IRequestHandler<GetHistoriqueTrackingQuery, IEnumerable<PointTracking>>,
                 GetHistoriqueTrackingHandler>();
+            services.AddScoped<IRequestHandler<RefuserLivraisonCommand, bool>,
+                RefuserLivraisonHandler>();
+            services.AddScoped<IRequestHandler<GetReclamationsQuery, IEnumerable<ReclamationDto>>,
+                GetReclamationsHandler>();
+            services.AddScoped<IRequestHandler<GetCamionsParChauffeurQuery, IEnumerable<Camion>>,
+                GetCamionsParChauffeurHandler>();
 
             return services;
         }
