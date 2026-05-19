@@ -1,15 +1,13 @@
 import { Component, OnInit, inject, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { ChauffeurService } from '../../../core/services/chauffeur.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { SweetAlertService } from '../../../core/services/sweet-alert.service';
 import { ChauffeurDetailDto } from '../../../shared/models';
 import { ChauffeurFormComponent } from '../chauffeur-form/chauffeur-form.component';
@@ -19,34 +17,46 @@ import { ChauffeurFormComponent } from '../chauffeur-form/chauffeur-form.compone
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    CommonModule, FormsModule, MatTableModule,
-    MatButtonModule, MatIconModule, MatFormFieldModule,
-    MatInputModule, MatDialogModule, MatTooltipModule
+    CommonModule, FormsModule,
+    MatButtonModule, MatIconModule, MatDialogModule, MatTooltipModule
   ],
   templateUrl: './chauffeur-list.component.html',
   styleUrl: './chauffeur-list.component.css'
 })
 export class ChauffeurListComponent implements OnInit {
   private svc    = inject(ChauffeurService);
+  private auth   = inject(AuthService);
   private dialog = inject(MatDialog);
   private swal   = inject(SweetAlertService);
   private cdr    = inject(ChangeDetectorRef);
 
   chauffeurs: ChauffeurDetailDto[] = [];
-  search = '';
-  displayedColumns = ['nom', 'permis', 'telephone', 'email', 'embauche', 'dispo', 'actions'];
+  search     = '';
+  isAdmin    = false;
 
   get displayed() {
+    if (!this.search) return this.chauffeurs;
+    const q = this.search.toLowerCase();
     return this.chauffeurs.filter(c =>
-      !this.search ||
-      c.nomComplet.toLowerCase().includes(this.search.toLowerCase()) ||
-      c.telephone.includes(this.search)
+      c.nomComplet.toLowerCase().includes(q) ||
+      c.telephone.includes(q) ||
+      c.numeroPermis.toLowerCase().includes(q) ||
+      (c.email ?? '').toLowerCase().includes(q)
     );
   }
 
-  get disponibles() { return this.chauffeurs.filter(c => c.estDisponible).length; }
+  get disponibles()   { return this.chauffeurs.filter(c => c.estDisponible).length; }
+  get indisponibles() { return this.chauffeurs.length - this.disponibles; }
+  get enMission()     { return this.chauffeurs.filter(c => !c.estDisponible && c.camions.length > 0).length; }
 
-  ngOnInit() { this.load(); }
+  initiales(c: ChauffeurDetailDto) {
+    return (c.prenom?.[0] ?? '') + (c.nom?.[0] ?? '');
+  }
+
+  ngOnInit() {
+    this.isAdmin = this.auth.isAdmin();
+    this.load();
+  }
 
   load() {
     this.svc.getAll().subscribe(d => { this.chauffeurs = d; this.cdr.markForCheck(); });

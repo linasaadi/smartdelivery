@@ -1,195 +1,235 @@
-<div class="auth-page">
+<div class="auth-wrap">
 
-  <!-- ── Left branding panel ── -->
-  <div class="brand-panel">
-    <div class="brand-glow"></div>
+  <!-- ── Panneau gauche animé ── -->
+  <div class="left-panel">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="grid-overlay"></div>
 
-    <div class="brand-logo">
-      <mat-icon>local_shipping</mat-icon>
-    </div>
+    <div class="lp-content">
+      <div class="logo-badge">
+        <mat-icon>local_shipping</mat-icon>
+      </div>
 
-    <h1 class="brand-title">SmartDelivery</h1>
-    <p class="brand-sub">Rejoignez la plateforme de gestion de flotte intelligente</p>
+      <h1>Smart<br><span class="gradient-text">Delivery</span></h1>
+      <p class="lp-sub">Rejoignez la plateforme de gestion de flotte intelligente</p>
 
-    <div class="features">
-      <div class="feature-item">
-        <div class="feature-icon"><mat-icon>map</mat-icon></div>
-        <div>
-          <div class="feature-label">Tracking en temps réel</div>
-          <div class="feature-desc">Suivez vos livraisons à la seconde</div>
+      <div class="roles-preview">
+        <div class="role-preview-card rp-admin">
+          <mat-icon>admin_panel_settings</mat-icon>
+          <div>
+            <div class="rp-title">Admin</div>
+            <div class="rp-desc">KPI · Utilisateurs · Flotte</div>
+          </div>
+        </div>
+        <div class="role-preview-card rp-dispatcher">
+          <mat-icon>headset_mic</mat-icon>
+          <div>
+            <div class="rp-title">Dispatcher</div>
+            <div class="rp-desc">Livraisons · Assignations</div>
+          </div>
+        </div>
+        <div class="role-preview-card rp-chauffeur">
+          <mat-icon>local_shipping</mat-icon>
+          <div>
+            <div class="rp-title">Chauffeur</div>
+            <div class="rp-desc">Tournées · GPS · Anomalies</div>
+          </div>
         </div>
       </div>
-      <div class="feature-item">
-        <div class="feature-icon"><mat-icon>route</mat-icon></div>
-        <div>
-          <div class="feature-label">Optimisation des routes</div>
-          <div class="feature-desc">Réduisez vos coûts de livraison</div>
-        </div>
-      </div>
-      <div class="feature-item">
-        <div class="feature-icon"><mat-icon>notifications_active</mat-icon></div>
-        <div>
-          <div class="feature-label">Alertes instantanées</div>
-          <div class="feature-desc">Notifications sur anomalies et retards</div>
-        </div>
-      </div>
-    </div>
 
-    <div class="brand-footer">
-      © 2026 SmartDelivery — PFE Lina
+      <div class="lp-info-box">
+        <mat-icon>shield</mat-icon>
+        <span>L'inscription Admin est réservée aux administrateurs existants via l'interface de gestion.</span>
+      </div>
+
+      <div class="lp-footer">© 2026 SmartDelivery · PFE Lina Saadi</div>
     </div>
   </div>
 
-  <!-- ── Right form panel ── -->
-  <div class="form-panel">
+  <!-- ── Panneau droit (formulaire) ── -->
+  <div class="right-panel">
     <div class="form-card">
 
-      <div class="form-header">
-        <div class="form-icon"><mat-icon>person_add</mat-icon></div>
+      <div class="card-head">
+        <div class="card-icon">
+          <mat-icon>person_add</mat-icon>
+        </div>
         <h2>Créer un compte</h2>
-        <p>Inscrivez-vous pour accéder à la plateforme</p>
+        <p>Inscrivez-vous pour accéder à SmartDelivery</p>
       </div>
 
-      <!-- Success -->
-      @if (success()) {
-        <div class="alert alert-success">
-          <mat-icon>check_circle</mat-icon>
-          <span>{{ success() }}</span>
+      <!-- Succès -->
+      @if (idAttribue()) {
+        <div class="alert-success">
+          <div class="alert-icon"><mat-icon>verified_user</mat-icon></div>
+          <div>
+            <strong>Compte {{ idAttribue()!.role }} créé avec succès !</strong>
+            <span>Identifiant attribué : <b>#{{ idAttribue()!.id }}</b></span>
+            <span class="redirecting">Redirection vers le tableau de bord…</span>
+          </div>
         </div>
       }
 
-      <!-- Error -->
+      <!-- Erreur -->
       @if (error()) {
-        <div class="alert alert-error">
+        <div class="alert-error">
           <mat-icon>error_outline</mat-icon>
           <span>{{ error() }}</span>
         </div>
       }
 
-      <form #f="ngForm" (ngSubmit)="onSubmit(f)" novalidate>
+      <form #f="ngForm" (ngSubmit)="onSubmit(f)" novalidate autocomplete="on">
 
-        <!-- Nom / Prénom row -->
+        <!-- Prénom / Nom -->
         <div class="row-two">
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Prénom</mat-label>
-            <mat-icon matPrefix>badge</mat-icon>
-            <input matInput
-                   name="prenom"
-                   [(ngModel)]="prenom"
-                   required
-                   #prenomCtrl="ngModel"
-                   placeholder="Votre prénom">
+          <div class="field-group">
+            <label>Prénom <span class="req">*</span></label>
+            <div class="field-wrap" [class.has-value]="prenom">
+              <mat-icon class="fi">badge</mat-icon>
+              <input type="text" name="prenom" [(ngModel)]="prenom"
+                     required #prenomCtrl="ngModel"
+                     placeholder="Votre prénom">
+            </div>
             @if (prenomCtrl.invalid && prenomCtrl.touched) {
-              <mat-error>Prénom requis</mat-error>
+              <span class="field-error">Prénom requis</span>
             }
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Nom</mat-label>
-            <mat-icon matPrefix>badge</mat-icon>
-            <input matInput
-                   name="nom"
-                   [(ngModel)]="nom"
-                   required
-                   #nomCtrl="ngModel"
-                   placeholder="Votre nom">
+          </div>
+          <div class="field-group">
+            <label>Nom <span class="req">*</span></label>
+            <div class="field-wrap" [class.has-value]="nom">
+              <mat-icon class="fi">badge</mat-icon>
+              <input type="text" name="nom" [(ngModel)]="nom"
+                     required #nomCtrl="ngModel"
+                     placeholder="Votre nom">
+            </div>
             @if (nomCtrl.invalid && nomCtrl.touched) {
-              <mat-error>Nom requis</mat-error>
+              <span class="field-error">Nom requis</span>
             }
-          </mat-form-field>
+          </div>
         </div>
 
         <!-- Email -->
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Adresse email</mat-label>
-          <mat-icon matPrefix>mail_outline</mat-icon>
-          <input matInput
-                 type="email"
-                 name="email"
-                 [(ngModel)]="email"
-                 required
-                 email
-                 #emailCtrl="ngModel"
-                 placeholder="prenom.nom@exemple.com">
+        <div class="field-group">
+          <label>Adresse email <span class="req">*</span></label>
+          <div class="field-wrap" [class.has-value]="email">
+            <mat-icon class="fi">mail_outline</mat-icon>
+            <input type="email" name="email" [(ngModel)]="email"
+                   required email #emailCtrl="ngModel"
+                   placeholder="prenom.nom@exemple.com"
+                   autocomplete="email">
+          </div>
           @if (emailCtrl.invalid && emailCtrl.touched) {
-            <mat-error>Email valide requis</mat-error>
+            <span class="field-error">Adresse email valide requise</span>
           }
-        </mat-form-field>
+        </div>
 
-        <!-- Rôle -->
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Rôle</mat-label>
-          <mat-icon matPrefix>manage_accounts</mat-icon>
-          <mat-select name="role" [(ngModel)]="role" required>
-            <mat-option value="Dispatcher">
-              <div class="role-option">
-                <mat-icon>headset_mic</mat-icon>
-                <span>Dispatcher — Gestion des livraisons</span>
+        <!-- Rôle : visual cards -->
+        <div class="field-group">
+          <label>Rôle <span class="req">*</span></label>
+          <div class="role-cards">
+            <button type="button" class="role-card"
+                    [class.selected]="role === 'Dispatcher'"
+                    (click)="role = 'Dispatcher'">
+              <div class="rc-icon rc-dispatcher"><mat-icon>headset_mic</mat-icon></div>
+              <div class="rc-label">Dispatcher</div>
+              <div class="rc-desc">Gestion des livraisons</div>
+              <div class="rc-check" [class.visible]="role === 'Dispatcher'">
+                <mat-icon>check_circle</mat-icon>
               </div>
-            </mat-option>
-            <mat-option value="Chauffeur">
-              <div class="role-option">
-                <mat-icon>local_shipping</mat-icon>
-                <span>Chauffeur — Exécution des tournées</span>
+            </button>
+            <button type="button" class="role-card"
+                    [class.selected]="role === 'Chauffeur'"
+                    (click)="role = 'Chauffeur'">
+              <div class="rc-icon rc-chauffeur"><mat-icon>local_shipping</mat-icon></div>
+              <div class="rc-label">Chauffeur</div>
+              <div class="rc-desc">Exécution des tournées</div>
+              <div class="rc-check" [class.visible]="role === 'Chauffeur'">
+                <mat-icon>check_circle</mat-icon>
               </div>
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
+            </button>
+          </div>
+        </div>
 
         <!-- Mot de passe -->
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Mot de passe</mat-label>
-          <mat-icon matPrefix>lock_outline</mat-icon>
-          <input matInput
-                 [type]="hidePass() ? 'password' : 'text'"
-                 name="motDePasse"
-                 [(ngModel)]="motDePasse"
-                 required
-                 minlength="8"
-                 #passCtrl="ngModel"
-                 placeholder="Min. 8 caractères">
-          <button mat-icon-button matSuffix type="button"
-                  (click)="hidePass.set(!hidePass())">
-            <mat-icon>{{ hidePass() ? 'visibility_off' : 'visibility' }}</mat-icon>
-          </button>
+        <div class="field-group">
+          <label>Mot de passe <span class="req">*</span></label>
+          <div class="field-wrap" [class.has-value]="motDePasse">
+            <mat-icon class="fi">lock_outline</mat-icon>
+            <input [type]="hidePass() ? 'password' : 'text'"
+                   name="motDePasse" [(ngModel)]="motDePasse"
+                   required minlength="8" #passCtrl="ngModel"
+                   placeholder="Min. 8 caractères"
+                   autocomplete="new-password">
+            <button type="button" class="eye-btn" (click)="hidePass.set(!hidePass())">
+              <mat-icon>{{ hidePass() ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+          </div>
+          <!-- Barre de force -->
+          @if (motDePasse) {
+            <div class="strength-bar-wrap">
+              <div class="strength-bar">
+                @for (i of [1,2,3,4]; track i) {
+                  <div class="sb-segment"
+                       [style.background]="i <= passStrength ? passStrengthColor : '#e2e8f0'">
+                  </div>
+                }
+              </div>
+              <span class="strength-label" [style.color]="passStrengthColor">
+                {{ passStrengthLabel }}
+              </span>
+            </div>
+          }
           @if (passCtrl.invalid && passCtrl.touched) {
-            <mat-error>Minimum 8 caractères requis</mat-error>
+            <span class="field-error">Minimum 8 caractères requis</span>
           }
-        </mat-form-field>
+        </div>
 
-        <!-- Confirmer -->
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Confirmer le mot de passe</mat-label>
-          <mat-icon matPrefix>lock_outline</mat-icon>
-          <input matInput
-                 [type]="hideConfirm() ? 'password' : 'text'"
-                 name="confirm"
-                 [(ngModel)]="confirm"
-                 required
-                 #confirmCtrl="ngModel"
-                 placeholder="Répétez votre mot de passe">
-          <button mat-icon-button matSuffix type="button"
-                  (click)="hideConfirm.set(!hideConfirm())">
-            <mat-icon>{{ hideConfirm() ? 'visibility_off' : 'visibility' }}</mat-icon>
-          </button>
-          @if (confirmCtrl.invalid && confirmCtrl.touched) {
-            <mat-error>Confirmation requise</mat-error>
+        <!-- Confirmer mot de passe -->
+        <div class="field-group">
+          <label>Confirmer le mot de passe <span class="req">*</span></label>
+          <div class="field-wrap" [class.has-value]="confirm"
+               [class.mismatch]="confirm && confirm !== motDePasse">
+            <mat-icon class="fi">lock_outline</mat-icon>
+            <input [type]="hideConfirm() ? 'password' : 'text'"
+                   name="confirm" [(ngModel)]="confirm"
+                   required #confirmCtrl="ngModel"
+                   placeholder="Répétez votre mot de passe"
+                   autocomplete="new-password">
+            <button type="button" class="eye-btn" (click)="hideConfirm.set(!hideConfirm())">
+              <mat-icon>{{ hideConfirm() ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+          </div>
+          @if (confirm && confirm !== motDePasse) {
+            <span class="field-error">Les mots de passe ne correspondent pas</span>
           }
-        </mat-form-field>
+        </div>
 
-        <!-- Password hint -->
-        <div class="pass-hint">
-          <mat-icon>info_outline</mat-icon>
-          Le mot de passe doit contenir au moins 8 caractères, une majuscule, un chiffre et un caractère spécial (!@#$%...).
+        <!-- Règles mot de passe -->
+        <div class="pass-rules">
+          <div class="rule" [class.ok]="motDePasse.length >= 8">
+            <mat-icon>{{ motDePasse.length >= 8 ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
+            8 caractères minimum
+          </div>
+          <div class="rule" [class.ok]="/[A-Z]/.test(motDePasse)">
+            <mat-icon>{{ /[A-Z]/.test(motDePasse) ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
+            Une majuscule
+          </div>
+          <div class="rule" [class.ok]="/[0-9]/.test(motDePasse)">
+            <mat-icon>{{ /[0-9]/.test(motDePasse) ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
+            Un chiffre
+          </div>
+          <div class="rule" [class.ok]="/[^a-zA-Z0-9]/.test(motDePasse)">
+            <mat-icon>{{ /[^a-zA-Z0-9]/.test(motDePasse) ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
+            Un caractère spécial
+          </div>
         </div>
 
         <!-- Submit -->
-        <button mat-flat-button
-                type="submit"
-                class="submit-btn"
-                [disabled]="loading()">
+        <button type="submit" class="btn-submit" [disabled]="loading()">
           @if (loading()) {
-            <mat-spinner diameter="20"></mat-spinner>
+            <span class="spin"></span>
             <span>Création en cours…</span>
           } @else {
             <mat-icon>how_to_reg</mat-icon>
@@ -197,13 +237,10 @@
           }
         </button>
 
-        <!-- Login link -->
-        <p class="login-link">
-          Vous avez déjà un compte ?
-          <a routerLink="/login">Se connecter</a>
-        </p>
+        <p class="alt-link">Vous avez déjà un compte ?&nbsp;<a routerLink="/login">Se connecter</a></p>
 
       </form>
     </div>
   </div>
+
 </div>

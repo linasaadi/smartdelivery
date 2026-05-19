@@ -8,6 +8,7 @@ import { MatButtonModule } from '@angular/material/button';
 
 import { DashboardService } from '../../core/services/dashboard.service';
 import { AuthService } from '../../core/services/auth.service';
+import { LivraisonService } from '../../core/services/livraison.service';
 import { KpiAdminDto, KpiDispatcherDto, LivraisonResumeDto, CamionResumeDto } from '../../shared/models';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
 
@@ -31,22 +32,32 @@ interface KpiCard {
   styleUrl: './dashboard.component.css'
 })
 export class DashboardComponent implements OnInit {
-  private dashboardSvc = inject(DashboardService);
-  private authSvc      = inject(AuthService);
-  private cdr          = inject(ChangeDetectorRef);
+  private dashboardSvc  = inject(DashboardService);
+  private authSvc       = inject(AuthService);
+  private livraisonSvc  = inject(LivraisonService);
+  private cdr           = inject(ChangeDetectorRef);
+
+  isChauffeur = false;
+  isAdmin     = false;
 
   stats: KpiCard[] = [];
   dernieresLivraisons: LivraisonResumeDto[] = [];
   camionsResume: CamionResumeDto[] = [];
   totalLivraisons = 0;
-  enRetard = 0;
-  enCours  = 0;
-  livrees  = 0;
+  enRetard  = 0;
+  enCours   = 0;
+  livrees   = 0;
   enAttente = 0;
-  displayedColumns = ['reference', 'statut', 'destination', 'datePrevue'];
+  displayedColumns        = ['reference', 'statut', 'destination', 'datePrevue'];
+  displayedColumnsChauffeur = ['reference', 'statut', 'destination', 'datePrevue'];
 
   ngOnInit() {
-    if (this.authSvc.isAdmin()) {
+    this.isChauffeur = this.authSvc.isChauffeur();
+    this.isAdmin     = this.authSvc.isAdmin();
+
+    if (this.isChauffeur) {
+      this.loadChauffeurDashboard();
+    } else if (this.isAdmin) {
       this.dashboardSvc.getKpiAdmin().subscribe(kpi => {
         this.buildStatsAdmin(kpi);
         this.dernieresLivraisons = kpi.livraisonsEnRetard.slice(0, 8);
@@ -67,6 +78,46 @@ export class DashboardComponent implements OnInit {
         this.cdr.markForCheck();
       });
     }
+  }
+
+  private loadChauffeurDashboard() {
+    this.livraisonSvc.getMesLivraisons({ page: 1, taillePage: 200 }).subscribe(page => {
+      const all = page.elements;
+      this.totalLivraisons = page.totalElements;
+      this.enCours   = all.filter(l => l.statut === 'EnCours').length;
+      this.livrees   = all.filter(l => l.statut === 'Livree').length;
+      this.enRetard  = all.filter(l => l.statut === 'EnRetard').length;
+      this.enAttente = all.filter(l => l.statut === 'EnAttente').length;
+
+      this.stats = [
+        {
+          title: 'En cours', value: this.enCours, icon: 'local_shipping',
+          trend: 'Livraisons actives',
+          style: '--kpi-from:#2563eb;--kpi-to:#1d4ed8'
+        },
+        {
+          title: 'En attente', value: this.enAttente, icon: 'schedule',
+          trend: 'À accepter / confirmer',
+          style: '--kpi-from:#f59e0b;--kpi-to:#d97706'
+        },
+        {
+          title: 'Livrées', value: this.livrees, icon: 'task_alt',
+          trend: 'Missions accomplies',
+          style: '--kpi-from:#059669;--kpi-to:#047857'
+        },
+        {
+          title: 'En retard', value: this.enRetard, icon: 'warning_amber',
+          trend: this.enRetard > 0 ? 'Action requise !' : 'Aucun retard',
+          style: '--kpi-from:#dc2626;--kpi-to:#b91c1c'
+        },
+      ];
+
+      // Show active (EnCours + EnAttente) livraisons as the upcoming list
+      this.dernieresLivraisons = all
+        .filter(l => l.statut === 'EnCours' || l.statut === 'EnAttente')
+        .slice(0, 6);
+      this.cdr.markForCheck();
+    });
   }
 
   private buildStatsAdmin(kpi: KpiAdminDto) {

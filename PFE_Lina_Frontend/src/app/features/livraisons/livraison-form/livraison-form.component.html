@@ -3,7 +3,7 @@
   <div class="dlg-icon"><mat-icon>local_shipping</mat-icon></div>
   <div class="dlg-titles">
     <h2>Nouvelle livraison</h2>
-    <p>Créer un nouveau bon de livraison</p>
+    <p>Créer un bon de livraison et assigner un chauffeur</p>
   </div>
   <button class="dlg-close-btn" type="button" (click)="cancel()">
     <mat-icon>close</mat-icon>
@@ -28,21 +28,44 @@
       </mat-form-field>
     </div>
 
-    <!-- Assignation -->
+    <!-- Assignation chauffeur + camion -->
     <div class="form-section">
       <div class="form-section-label">
-        <mat-icon>swap_horiz</mat-icon> Assignation
+        <mat-icon>person_pin</mat-icon> Assignation
       </div>
+
+      <!-- Chauffeur disponible -->
+      <mat-form-field appearance="outline" class="form-full">
+        <mat-label>Chauffeur disponible</mat-label>
+        <mat-icon matPrefix>person</mat-icon>
+        <mat-select [(ngModel)]="chauffeurSelectionneId" (ngModelChange)="onChauffeurChange()"
+                    placeholder="Sélectionner un chauffeur">
+          <mat-option [value]="undefined">— Tous les chauffeurs —</mat-option>
+          @for (c of chauffeurs; track c.id) {
+            <mat-option [value]="c.id">
+              {{ c.nomComplet }} · {{ c.telephone }}
+            </mat-option>
+          }
+        </mat-select>
+        <mat-hint>Filtre les camions disponibles pour ce chauffeur</mat-hint>
+      </mat-form-field>
+
       <div class="form-row-2">
+        <!-- Camion (filtré par chauffeur) -->
         <mat-form-field appearance="outline">
           <mat-label>Camion *</mat-label>
           <mat-icon matPrefix>directions_car</mat-icon>
           <mat-select [(ngModel)]="camionId" required placeholder="Sélectionner un camion">
-            @for (c of camions; track c.id) {
-              <mat-option [value]="c.id">{{ c.immatriculation }} · {{ c.marque }}</mat-option>
+            @for (c of camionsFiltres; track c.id) {
+              <mat-option [value]="c.id">
+                {{ c.immatriculation }} · {{ c.marque }}
+                @if (c.nomChauffeur) { <span style="opacity:.6"> ({{ c.nomChauffeur }})</span> }
+              </mat-option>
             }
           </mat-select>
         </mat-form-field>
+
+        <!-- Destination -->
         <mat-form-field appearance="outline">
           <mat-label>Destination *</mat-label>
           <mat-icon matPrefix>place</mat-icon>
@@ -55,35 +78,43 @@
       </div>
     </div>
 
-    <!-- Produits -->
+    <!-- Produit inline -->
     <div class="form-section">
-      <div class="form-section-label" style="display:flex;justify-content:space-between;align-items:center">
-        <span><mat-icon>inventory_2</mat-icon> Produits *</span>
-        <button type="button" mat-icon-button (click)="ajouterLigne()" matTooltip="Ajouter un produit">
-          <mat-icon>add_circle_outline</mat-icon>
-        </button>
+      <div class="form-section-label">
+        <mat-icon>inventory_2</mat-icon> Produit à livrer
       </div>
-      @for (ligne of lignes; track $index) {
-        <div class="form-row-2" style="align-items:center;gap:8px">
-          <mat-form-field appearance="outline">
-            <mat-label>Produit</mat-label>
-            <mat-select [(ngModel)]="ligne.produitId">
-              @for (p of produits; track p.id) {
-                <mat-option [value]="p.id">{{ p.nom }} ({{ p.prixUnitaire | number:'1.2-2' }} €/u)</mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
-          <mat-form-field appearance="outline" style="max-width:100px">
-            <mat-label>Qté</mat-label>
-            <input matInput type="number" [(ngModel)]="ligne.quantite" min="1">
-          </mat-form-field>
-          @if (lignes.length > 1) {
-            <button type="button" mat-icon-button (click)="retirerLigne($index)" matTooltip="Retirer">
-              <mat-icon style="color:#ef4444">remove_circle_outline</mat-icon>
-            </button>
-          }
-        </div>
-      }
+
+      <mat-form-field appearance="outline" class="form-full">
+        <mat-label>Nom du produit *</mat-label>
+        <mat-icon matPrefix>label</mat-icon>
+        <input matInput [(ngModel)]="nomProduit" required
+               placeholder="Ex: Colis électronique, Meubles, Matériaux…">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="form-full">
+        <mat-label>Description (optionnelle)</mat-label>
+        <mat-icon matPrefix>description</mat-icon>
+        <textarea matInput [(ngModel)]="descriptionProduit" rows="2"
+                  placeholder="Détails sur le produit, précautions…"></textarea>
+      </mat-form-field>
+
+      <div class="form-row-3">
+        <mat-form-field appearance="outline">
+          <mat-label>Quantité *</mat-label>
+          <mat-icon matPrefix>format_list_numbered</mat-icon>
+          <input matInput type="number" [(ngModel)]="quantite" min="1" required>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Poids (kg)</mat-label>
+          <mat-icon matPrefix>scale</mat-icon>
+          <input matInput type="number" [(ngModel)]="poidsKg" min="0" step="0.1">
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Prix unitaire (DT)</mat-label>
+          <mat-icon matPrefix>payments</mat-icon>
+          <input matInput type="number" [(ngModel)]="prixUnitaire" min="0" step="0.01">
+        </mat-form-field>
+      </div>
     </div>
 
     <!-- Notes -->
@@ -95,7 +126,7 @@
         <mat-label>Notes / Instructions</mat-label>
         <mat-icon matPrefix>sticky_note_2</mat-icon>
         <textarea matInput [(ngModel)]="notes" rows="3"
-                  placeholder="Instructions spéciales, informations de contact..."></textarea>
+                  placeholder="Instructions spéciales, informations de contact…"></textarea>
       </mat-form-field>
     </div>
 

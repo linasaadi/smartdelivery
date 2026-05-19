@@ -1,6 +1,7 @@
 // ─── Enums ───────────────────────────────────────────────────────────────────
-export type StatutLivraison = 'EnAttente' | 'EnCours' | 'Livree' | 'Annulee' | 'EnRetard';
-export type StatutCamion = 'Disponible' | 'EnRoute' | 'EnMaintenance' | 'HorsService';
+export type StatutLivraison   = 'EnAttente' | 'EnCours' | 'Livree' | 'Annulee' | 'EnRetard' | 'Refusee';
+export type StatutCamion      = 'Disponible' | 'EnRoute' | 'EnMaintenance' | 'HorsService';
+export type StatutReclamation = 'EnAttente' | 'EnCours' | 'Resolue';
 
 // ─── Pagination ──────────────────────────────────────────────────────────────
 export interface PageDonnees<T> {
@@ -31,6 +32,32 @@ export interface DestinationFormDto {
   pays?: string;
   latitude: number;
   longitude: number;
+}
+
+// ─── Dispatcher ───────────────────────────────────────────────────────────────
+export interface DispatcherResumeDto {
+  id: number;
+  nomComplet: string;
+  telephone?: string;
+  zoneResponsabilite?: string;
+}
+
+export interface DispatcherDetailDto {
+  id: number;
+  nom: string;
+  prenom: string;
+  telephone?: string;
+  email?: string;
+  datePriseEnCharge: string;
+  zoneResponsabilite?: string;
+}
+
+export interface DispatcherFormDto {
+  nom: string;
+  prenom: string;
+  telephone?: string;
+  email?: string;
+  zoneResponsabilite?: string;
 }
 
 // ─── Chauffeur ────────────────────────────────────────────────────────────────
@@ -95,24 +122,6 @@ export interface CamionFormDto {
   chauffeurId?: number;
 }
 
-// ─── Produit ──────────────────────────────────────────────────────────────────
-export interface Produit {
-  id: number;
-  nom: string;
-  description?: string;
-  poidsKg: number;
-  volumeM3: number;
-  prixUnitaire: number;
-}
-
-export interface ProduitFormDto {
-  nom: string;
-  description?: string;
-  poidsKg: number;
-  volumeM3: number;
-  prixUnitaire: number;
-}
-
 // ─── Tracking & Anomalie ──────────────────────────────────────────────────────
 export interface PointTrackingDto {
   id: number;
@@ -135,13 +144,6 @@ export interface AnomalieDto {
 }
 
 // ─── Livraison ────────────────────────────────────────────────────────────────
-export interface LivraisonProduitDto {
-  produitId: number;
-  nomProduit?: string;
-  quantite: number;
-  prixTotal: number;
-}
-
 export interface LivraisonResumeDto {
   id: number;
   reference: string;
@@ -149,6 +151,8 @@ export interface LivraisonResumeDto {
   nomChauffeur?: string;
   immatriculationCamion?: string;
   destination: string;
+  nomProduit: string;
+  quantite: number;
   dateLivraisonPrevue?: string;
   dateLivraisonReelle?: string;
   eta?: string;
@@ -162,7 +166,13 @@ export interface LivraisonDetailDto {
   statut: StatutLivraison;
   camion?: CamionResumeDto;
   destination: Destination;
-  produits: LivraisonProduitDto[];
+  // Produit inline
+  nomProduit: string;
+  descriptionProduit?: string;
+  poidsKg: number;
+  volumeM3: number;
+  quantite: number;
+  prixUnitaire: number;
   anomalies: AnomalieDto[];
   dateCreation: string;
   dateLivraisonPrevue?: string;
@@ -170,13 +180,20 @@ export interface LivraisonDetailDto {
   eta?: string;
   cout: number;
   notes?: string;
+  dispatcheurId?: number;
 }
 
 export interface CreerLivraisonDto {
   camionId: number;
   destinationId: number;
   dateLivraisonPrevue: string;
-  produits: { produitId: number; quantite: number; nomProduit?: null; prixTotal?: 0 }[];
+  // Produit inline
+  nomProduit: string;
+  descriptionProduit?: string;
+  poidsKg: number;
+  volumeM3: number;
+  quantite: number;
+  prixUnitaire: number;
   notes?: string;
 }
 
@@ -241,6 +258,55 @@ export interface FacteurTrafic {
   heure: number;
   facteur: number;
   zone?: string;
+}
+
+// ─── Réclamation ──────────────────────────────────────────────────────────────
+export interface ReclamationDto {
+  id: number;
+  titre: string;
+  description: string;
+  statut: StatutReclamation;
+  dateCreation: string;
+  dateResolution?: string;
+  reponseAdmin?: string;
+  utilisateurId: string;
+  nomUtilisateur?: string;
+  roleUtilisateur?: string;
+  livraisonId?: number;
+  referenceLivraison?: string;
+}
+
+export interface ReclamationFormDto {
+  titre: string;
+  description: string;
+  livraisonId?: number;
+}
+
+export interface ModifierReclamationDto {
+  titre?: string;
+  description?: string;
+  nouveauStatut?: string;
+  reponseAdmin?: string;
+}
+
+export interface RepondreReclamationDto {
+  nouveauStatut: string;
+  reponseAdmin?: string;
+}
+
+// ─── Utilisateur (Admin) ──────────────────────────────────────────────────────
+export interface UtilisateurDto {
+  id: string;
+  email: string;
+  nom: string;
+  prenom: string;
+  role: string;
+  chauffeurId?: number;
+  dispatcherId?: number;
+}
+
+export interface ChangerRoleDto {
+  nouveauRole: string;
 }
 
 // ─── Compatibilité — types legacy utilisés dans tracking/routes ───────────────

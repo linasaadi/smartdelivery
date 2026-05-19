@@ -22,7 +22,9 @@
       <mat-form-field appearance="outline" class="form-full">
         <mat-label>Immatriculation</mat-label>
         <mat-icon matPrefix>confirmation_number</mat-icon>
-        <input matInput [(ngModel)]="form.immatriculation" required placeholder="AA-123-BB">
+        <input matInput [(ngModel)]="form.immatriculation" required placeholder="AA-123-BB"
+               (input)="majusculesImmat()" style="text-transform:uppercase">
+        <mat-hint>Majuscules uniquement — ex : TU-123-AB</mat-hint>
       </mat-form-field>
       <div class="form-row-2">
         <mat-form-field appearance="outline">
@@ -45,16 +47,18 @@
       </div>
       <div class="form-row-2">
         <mat-form-field appearance="outline">
-          <mat-label>Capacité</mat-label>
+          <mat-label>Capacité *</mat-label>
           <mat-icon matPrefix>scale</mat-icon>
-          <input matInput type="number" [(ngModel)]="form.capaciteKg" min="0" placeholder="20000">
+          <input matInput type="number" [(ngModel)]="form.capaciteKg" min="1" required placeholder="20000">
           <span matSuffix>kg</span>
+          <mat-hint>Doit être &gt; 0</mat-hint>
         </mat-form-field>
         <mat-form-field appearance="outline">
-          <mat-label>Volume</mat-label>
+          <mat-label>Volume *</mat-label>
           <mat-icon matPrefix>crop_square</mat-icon>
-          <input matInput type="number" [(ngModel)]="form.capaciteM3" min="0" placeholder="50">
+          <input matInput type="number" [(ngModel)]="form.capaciteM3" min="1" required placeholder="50">
           <span matSuffix>m³</span>
+          <mat-hint>Doit être &gt; 0</mat-hint>
         </mat-form-field>
       </div>
     </div>
@@ -64,16 +68,29 @@
       <div class="form-section-label">
         <mat-icon>person_pin</mat-icon> Affectation
       </div>
-      <mat-form-field appearance="outline" class="form-full">
-        <mat-label>Chauffeur assigné</mat-label>
-        <mat-icon matPrefix>person</mat-icon>
-        <mat-select [(ngModel)]="form.chauffeurId">
-          <mat-option [value]="undefined">— Aucun —</mat-option>
-          @for (c of chauffeurs; track c.id) {
-            <mat-option [value]="c.id">{{ c.prenom }} {{ c.nom }}</mat-option>
-          }
-        </mat-select>
-      </mat-form-field>
+
+      @if (estChauffeur) {
+        <!-- Chauffeur connecté : affectation automatique, pas de sélection -->
+        <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;
+                    background:linear-gradient(135deg,#d1fae5,#a7f3d0);
+                    border:1px solid #6ee7b7;border-radius:10px;
+                    color:#065f46;font-size:.9rem;font-weight:500;">
+          <mat-icon style="color:#059669;flex-shrink:0">check_circle</mat-icon>
+          <span>Ce camion sera automatiquement assigné à votre profil chauffeur.</span>
+        </div>
+      } @else {
+        <!-- Admin / Dispatcher : sélection manuelle -->
+        <mat-form-field appearance="outline" class="form-full">
+          <mat-label>Chauffeur assigné</mat-label>
+          <mat-icon matPrefix>person</mat-icon>
+          <mat-select [(ngModel)]="form.chauffeurId">
+            <mat-option [value]="undefined">— Aucun —</mat-option>
+            @for (c of chauffeurs; track c.id) {
+              <mat-option [value]="c.id">{{ c.prenom }} {{ c.nom }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      }
     </div>
 
     @if (error) {

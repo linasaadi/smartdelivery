@@ -35,6 +35,34 @@ export class SignalRNotificationService {
       this.nonLues.update(n => n + 1);
     });
 
+    // Notification lorsqu'un chauffeur refuse une livraison (reçue par les Dispatchers)
+    this.hub.on('LivraisonRefusee', (data: { reference: string; raisonRefus: string }) => {
+      const notif: Notification = {
+        id:          Date.now(),
+        titre:       `Livraison refusée : ${data.reference}`,
+        message:     data.raisonRefus ?? 'Aucun motif fourni',
+        type:        'warning',
+        horodatage:  new Date(),
+        lue:         false
+      };
+      this.notifications.update(list => [notif, ...list].slice(0, 50));
+      this.nonLues.update(n => n + 1);
+    });
+
+    // Notification lorsqu'une anomalie est signalée
+    this.hub.on('NouvelleAnomalie', (data: { livraisonId: number; anomalie: any }) => {
+      const notif: Notification = {
+        id:          Date.now(),
+        titre:       'Anomalie signalée',
+        message:     `Livraison #${data.livraisonId} : ${data.anomalie?.description ?? 'Anomalie détectée'}`,
+        type:        'danger',
+        horodatage:  new Date(),
+        lue:         false
+      };
+      this.notifications.update(list => [notif, ...list].slice(0, 50));
+      this.nonLues.update(n => n + 1);
+    });
+
     try {
       await this.hub.start();
     } catch (err) {

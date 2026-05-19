@@ -1,18 +1,152 @@
 @import url('../../../shared/styles/list-page.css');
 
-.stat-total { --pill-color: #6366f1; }
-.stat-ok    { --pill-color: #10b981; }
-.stat-warn  { --pill-color: #f59e0b; }
-
-.driver-cell { display: flex; align-items: center; gap: 12px; }
-.driver-avatar {
-  width: 38px; height: 38px; border-radius: 50%;
-  background: linear-gradient(135deg, #6366f1, #2563eb);
-  display: flex; align-items: center; justify-content: center;
-  font-size: .75rem; font-weight: 800; color: #fff;
-  letter-spacing: .02em; flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(99,102,241,.3);
+/* ── KPI strip ── */
+.kpi-strip {
+  display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap;
 }
-.driver-name { font-weight: 600; font-size: .875rem; color: #0f172a; }
-.driver-sub  { font-size: .75rem; color: #94a3b8; margin-top: 1px; }
-.mono { font-family: 'Courier New', monospace; letter-spacing: .04em; }
+
+.kpi-pill {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 20px; border-radius: 14px;
+  flex: 1; min-width: 140px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.07);
+}
+
+.kpi-pill-icon {
+  width: 42px; height: 42px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.kpi-pill-icon mat-icon { font-size: 22px !important; }
+
+.kpi-pill-value { font-size: 1.6rem; font-weight: 800; line-height: 1; }
+.kpi-pill-label { font-size: .72rem; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; margin-top: 2px; opacity: .7; }
+
+.kpi-total   { background: linear-gradient(135deg,#6366f1,#4f46e5); color:#fff; }
+.kpi-total   .kpi-pill-icon { background: rgba(255,255,255,.18); color: #fff; }
+.kpi-dispo   { background: linear-gradient(135deg,#059669,#047857); color:#fff; }
+.kpi-dispo   .kpi-pill-icon { background: rgba(255,255,255,.18); color: #fff; }
+.kpi-mission { background: linear-gradient(135deg,#f59e0b,#d97706); color:#fff; }
+.kpi-mission .kpi-pill-icon { background: rgba(255,255,255,.18); color: #fff; }
+
+/* ── Barre recherche ── */
+.search-bar {
+  display: flex; align-items: center; gap: 8px;
+  background: #fff; border: 1.5px solid #e2e8f0; border-radius: 12px;
+  padding: 0 12px 0 0; margin-bottom: 20px; overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,.06);
+}
+.search-icon  { padding: 0 10px; color: #94a3b8; font-size: 20px !important; }
+.search-input {
+  flex: 1; border: none; outline: none; padding: 12px 0;
+  font-size: .88rem; background: transparent; color: #1e293b;
+}
+.clear-btn {
+  width: 28px; height: 28px; border: none; border-radius: 50%;
+  background: #f1f5f9; cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+.clear-btn mat-icon { font-size: 16px !important; color: #64748b; }
+.result-count { font-size: .78rem; font-weight: 600; color: #94a3b8; white-space: nowrap; padding-right: 4px; }
+
+/* ── Grille cartes ── */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.driver-card {
+  background: #fff; border-radius: 16px; padding: 20px;
+  border: 1.5px solid #e2e8f0;
+  box-shadow: 0 2px 10px rgba(0,0,0,.06);
+  display: flex; flex-direction: column; gap: 14px;
+  transition: box-shadow .2s, transform .2s;
+}
+.driver-card:hover { box-shadow: 0 8px 28px rgba(0,0,0,.1); transform: translateY(-3px); }
+.card-dispo   { border-top: 3px solid #059669; }
+.card-indispo { border-top: 3px solid #f59e0b; }
+
+/* ── Avatar + statut ── */
+.card-top {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.avatar {
+  width: 52px; height: 52px; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .9rem; font-weight: 800; color: #fff;
+  letter-spacing: .02em; flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0,0,0,.15);
+}
+.avatar-dispo   { background: linear-gradient(135deg, #059669, #047857); }
+.avatar-indispo { background: linear-gradient(135deg, #f59e0b, #d97706); }
+
+.statut-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 4px 10px; border-radius: 20px;
+  font-size: .72rem; font-weight: 700;
+}
+.statut-badge mat-icon { font-size: 14px !important; }
+.badge-dispo   { background: #dcfce7; color: #15803d; }
+.badge-indispo { background: #fef9c3; color: #a16207; }
+
+/* ── Nom ── */
+.driver-name {
+  font-size: 1.05rem; font-weight: 800; color: #1e293b;
+  letter-spacing: -.01em;
+}
+
+/* ── Infos ── */
+.driver-infos { display: flex; flex-direction: column; gap: 7px; }
+.info-row {
+  display: flex; align-items: center; gap: 8px;
+  font-size: .82rem; color: #475569;
+}
+.info-icon { font-size: 16px !important; color: #94a3b8; flex-shrink: 0; }
+.mono      { font-family: 'Courier New', monospace; letter-spacing: .04em; }
+.email-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ── Camions ── */
+.camions-section { display: flex; flex-direction: column; gap: 6px; }
+.section-label {
+  display: flex; align-items: center; gap: 5px;
+  font-size: .72rem; font-weight: 700; color: #64748b;
+  text-transform: uppercase; letter-spacing: .06em;
+}
+.section-label mat-icon { font-size: 14px !important; }
+
+.camions-list { display: flex; flex-wrap: wrap; gap: 5px; }
+.camion-chip {
+  padding: 3px 10px; border-radius: 8px;
+  background: #dbeafe; color: #1d4ed8;
+  font-size: .75rem; font-weight: 600;
+  font-family: 'Courier New', monospace; letter-spacing: .03em;
+}
+
+.no-camion {
+  display: flex; align-items: center; gap: 6px;
+  font-size: .78rem; color: #94a3b8; font-style: italic;
+}
+.no-camion mat-icon { font-size: 15px !important; }
+
+/* ── Actions (Admin only) ── */
+.card-actions {
+  display: flex; gap: 8px; padding-top: 4px;
+  border-top: 1px solid #f1f5f9; margin-top: 4px;
+}
+.btn-edit, .btn-del {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 6px 12px; border-radius: 8px; border: none; cursor: pointer;
+  font-size: .78rem; font-weight: 700; transition: all .15s;
+}
+.btn-edit mat-icon, .btn-del mat-icon { font-size: 16px !important; }
+.btn-edit { background: #eff6ff; color: #2563eb; flex: 1; justify-content: center; }
+.btn-edit:hover { background: #dbeafe; }
+.btn-del  { background: #fef2f2; color: #dc2626; padding: 6px 10px; }
+.btn-del:hover  { background: #fee2e2; }
+
+/* ── Empty state ── */
+.empty-state {
+  text-align: center; padding: 64px 20px; color: #94a3b8;
+}
+.empty-state mat-icon { font-size: 56px !important; display: block; margin: 0 auto 14px; opacity: .3; }
+.empty-state p    { font-size: 1rem; font-weight: 600; margin: 0 0 6px; color: #64748b; }
+.empty-state span { font-size: .82rem; }

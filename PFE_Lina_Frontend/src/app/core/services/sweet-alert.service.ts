@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import Swal from 'sweetalert2';
+import { UtilisateurDto } from '../models/auth.models';
 
 @Injectable({ providedIn: 'root' })
 export class SweetAlertService {
@@ -56,5 +57,48 @@ export class SweetAlertService {
       timerProgressBar: true,
       customClass: { popup: 'swal-toast' }
     });
+  }
+
+  async choisirRole(utilisateur: UtilisateurDto, roles: string[]): Promise<string | null> {
+    const labelMap: Record<string, string> = {
+      Admin: 'Administrateur', Dispatcher: 'Dispatcher', Chauffeur: 'Chauffeur'
+    };
+    const options = roles.map(r => `<option value="${r}">${labelMap[r] ?? r}</option>`).join('');
+
+    const result = await Swal.fire({
+      title: 'Changer le rôle',
+      html: `
+        <p>Utilisateur : <strong>${utilisateur.prenom} ${utilisateur.nom}</strong></p>
+        <p>Rôle actuel : <strong>${labelMap[utilisateur.role] ?? utilisateur.role}</strong></p>
+        <select id="swal-role" class="swal2-select">${options}</select>
+      `,
+      showCancelButton:    true,
+      confirmButtonText:   'Confirmer',
+      cancelButtonText:    'Annuler',
+      confirmButtonColor:  '#2563eb',
+      cancelButtonColor:   '#64748b',
+      preConfirm: () => {
+        const sel = document.getElementById('swal-role') as HTMLSelectElement;
+        return sel?.value ?? null;
+      }
+    });
+
+    return result.isConfirmed ? (result.value as string) : null;
+  }
+
+  async demanderTexte(titre: string, label: string, placeholder = ''): Promise<string | null> {
+    const result = await Swal.fire({
+      title: titre,
+      input: 'textarea',
+      inputLabel: label,
+      inputPlaceholder: placeholder,
+      inputAttributes: { 'aria-label': label },
+      showCancelButton:   true,
+      confirmButtonText:  'Confirmer',
+      cancelButtonText:   'Annuler',
+      confirmButtonColor: '#2563eb',
+      cancelButtonColor:  '#64748b'
+    });
+    return result.isConfirmed ? (result.value as string) : null;
   }
 }

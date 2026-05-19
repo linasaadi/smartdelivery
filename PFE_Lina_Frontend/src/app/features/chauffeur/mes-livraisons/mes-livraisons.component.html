@@ -1,0 +1,213 @@
+<div class="page-container">
+
+  <!-- ── En-tête ── -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Mes livraisons</h1>
+      <p class="page-subtitle">{{ totalElements }} livraison(s) assignée(s)</p>
+    </div>
+    <!-- Toggle vue -->
+    <div class="view-toggle">
+      <button class="toggle-btn" [class.active]="vue === 'liste'" (click)="switchVue('liste')">
+        <mat-icon>view_list</mat-icon> Liste
+      </button>
+      <button class="toggle-btn" [class.active]="vue === 'calendrier'" (click)="switchVue('calendrier')">
+        <mat-icon>calendar_month</mat-icon> Calendrier
+      </button>
+    </div>
+  </div>
+
+  @if (erreur()) {
+    <div class="alert-error">
+      <mat-icon>error_outline</mat-icon>
+      <span>{{ erreur() }}</span>
+    </div>
+  }
+
+  <!-- ════════════════════════════════════════════════════════
+       VUE LISTE
+  ════════════════════════════════════════════════════════ -->
+  @if (vue === 'liste') {
+
+    <!-- Filtres statut -->
+    <div class="filters">
+      @for (s of statuts; track s.value) {
+        <button class="filter-chip" [class.active]="filteredStatut === s.value" (click)="onStatut(s.value)">
+          {{ s.label }}
+        </button>
+      }
+    </div>
+
+    <!-- Cartes livraison -->
+    <div class="cards-grid">
+      @for (l of elements; track l.id) {
+        <div class="livraison-card" [class.card-urgente]="l.statut === 'EnRetard'">
+
+          <!-- Badge statut + ref -->
+          <div class="card-top">
+            <div class="card-ref">
+              <div class="ref-dot" [style.background]="statColor(l.statut)"></div>
+              <strong>{{ l.reference }}</strong>
+            </div>
+            <app-status-badge [statut]="l.statut" />
+          </div>
+
+          <!-- Infos -->
+          <div class="card-infos">
+            <div class="info-row">
+              <mat-icon class="info-icon">place</mat-icon>
+              <span>{{ l.destination }}</span>
+            </div>
+            <div class="info-row">
+              <mat-icon class="info-icon">inventory_2</mat-icon>
+              <span>{{ l.nomProduit }} · {{ l.quantite }} unité(s)</span>
+            </div>
+            @if (l.dateLivraisonPrevue) {
+              <div class="info-row" [class.date-retard]="l.statut === 'EnRetard'">
+                <mat-icon class="info-icon">event</mat-icon>
+                <span>Prévue : {{ l.dateLivraisonPrevue | date:'dd/MM/yyyy' }}</span>
+              </div>
+            }
+            @if (l.immatriculationCamion) {
+              <div class="info-row">
+                <mat-icon class="info-icon">directions_car</mat-icon>
+                <span>{{ l.immatriculationCamion }}</span>
+              </div>
+            }
+          </div>
+
+          <!-- Actions -->
+          <div class="card-actions">
+            @if (l.statut === 'EnAttente') {
+              <button class="btn-accept" (click)="accepter(l)">
+                <mat-icon>check_circle</mat-icon> Accepter
+              </button>
+              <button class="btn-refuse" (click)="refuser(l)">
+                <mat-icon>cancel</mat-icon> Refuser
+              </button>
+            }
+            @if (l.statut === 'EnCours' || l.statut === 'EnRetard') {
+              <a class="btn-voir" [routerLink]="['/livraisons', l.id]">
+                <mat-icon>visibility</mat-icon> Détails
+              </a>
+              <button class="btn-urgence" (click)="signalerUrgence(l)" matTooltip="Signaler une urgence au dispatcher">
+                <mat-icon>warning</mat-icon> Urgence
+              </button>
+            }
+            @if (l.statut === 'Livree') {
+              <a class="btn-voir" [routerLink]="['/livraisons', l.id]">
+                <mat-icon>visibility</mat-icon> Détails
+              </a>
+              <button class="btn-rapport" (click)="soumettreRapport(l)" matTooltip="Soumettre un rapport de fin de livraison">
+                <mat-icon>assignment_turned_in</mat-icon> Rapport
+              </button>
+            }
+            @if (l.statut === 'Refusee') {
+              <span class="refus-info">Refusée — réassignation en attente</span>
+            }
+            @if (l.statut === 'Annulee') {
+              <span class="annulee-info">Annulée</span>
+            }
+          </div>
+        </div>
+      }
+
+      @if (elements.length === 0) {
+        <div class="empty-state">
+          <mat-icon>inbox</mat-icon>
+          <p>Aucune livraison trouvée</p>
+        </div>
+      }
+    </div>
+
+    <mat-paginator
+      [length]="totalElements"
+      [pageSize]="pageSize"
+      [pageSizeOptions]="[10, 20, 50]"
+      [pageIndex]="pageIndex"
+      (page)="onPage($event)"
+      showFirstLastButtons>
+    </mat-paginator>
+  }
+
+  <!-- ════════════════════════════════════════════════════════
+       VUE CALENDRIER
+  ════════════════════════════════════════════════════════ -->
+  @if (vue === 'calendrier') {
+    <div class="calendar-wrap">
+
+      <!-- Navigation mois -->
+      <div class="cal-header">
+        <button class="cal-nav" (click)="prevMonth()">
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+        <span class="cal-title">{{ calendarTitle }}</span>
+        <button class="cal-nav" (click)="nextMonth()">
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+      </div>
+
+      <!-- Jours de la semaine -->
+      <div class="cal-weekdays">
+        @for (j of joursLabels; track j) {
+          <div class="cal-weekday">{{ j }}</div>
+        }
+      </div>
+
+      <!-- Grille des jours -->
+      <div class="cal-grid">
+        @for (day of calendarDays; track day.date.toISOString()) {
+          <div class="cal-day"
+               [class.other-month]="!day.isCurrentMonth"
+               [class.today]="day.isToday"
+               [class.selected]="selectedDay !== null && selectedDay.date.getTime() === day.date.getTime()"
+               [class.has-livraisons]="day.livraisons.length > 0"
+               (click)="day.livraisons.length > 0 && selectDay(day)">
+            <span class="cal-day-num">{{ day.date.getDate() }}</span>
+            @if (day.livraisons.length > 0) {
+              <div class="cal-dots">
+                @for (l of day.livraisons.slice(0, 3); track l.id) {
+                  <span class="cal-dot" [style.background]="statColor(l.statut)"
+                        [matTooltip]="l.reference + ' — ' + l.statut"></span>
+                }
+                @if (day.livraisons.length > 3) {
+                  <span class="cal-dot-more">+{{ day.livraisons.length - 3 }}</span>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Légende -->
+      <div class="cal-legend">
+        <span class="legend-item"><span class="cal-dot" style="background:#f59e0b"></span> En attente</span>
+        <span class="legend-item"><span class="cal-dot" style="background:#3b82f6"></span> En cours</span>
+        <span class="legend-item"><span class="cal-dot" style="background:#22c55e"></span> Livrée</span>
+        <span class="legend-item"><span class="cal-dot" style="background:#ef4444"></span> En retard</span>
+      </div>
+
+      <!-- Détail du jour sélectionné -->
+      @if (selectedDay && selectedDay.livraisons.length > 0) {
+        <div class="day-detail">
+          <div class="day-detail-header">
+            <mat-icon>event</mat-icon>
+            <span>{{ selectedDay.date | date:'EEEE d MMMM yyyy':'':'fr' }}</span>
+            <span class="day-detail-count">{{ selectedDay.livraisons.length }} livraison(s)</span>
+          </div>
+          <div class="day-detail-list">
+            @for (l of selectedDay.livraisons; track l.id) {
+              <div class="day-livraison-row" [routerLink]="['/livraisons', l.id]">
+                <span class="cal-dot" [style.background]="statColor(l.statut)"></span>
+                <strong>{{ l.reference }}</strong>
+                <span class="dest-text">{{ l.destination }}</span>
+                <app-status-badge [statut]="l.statut" />
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+</div>

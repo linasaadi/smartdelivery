@@ -1,0 +1,186 @@
+<div class="page-container">
+
+  <!-- ── En-tête page ── -->
+  <div class="page-header">
+    <div class="ph-left">
+      <div class="ph-icon-wrap">
+        <mat-icon>report_problem</mat-icon>
+      </div>
+      <div>
+        <h1>{{ auth.isAdmin() ? 'Réclamations' : 'Mes réclamations' }}</h1>
+        <p>{{ auth.isAdmin() ? 'Gérer et traiter toutes les réclamations' : 'Suivre et gérer vos réclamations' }}</p>
+      </div>
+    </div>
+    @if (!auth.isAdmin()) {
+      <button class="btn-primary" (click)="openForm()">
+        <mat-icon>add</mat-icon> Nouvelle réclamation
+      </button>
+    }
+  </div>
+
+  <!-- ── KPI strip (cliquables = filtre) ── -->
+  <div class="kpi-strip">
+    <button class="kpi-pill kpi-total" [class.kpi-selected]="filterStatut===''" (click)="setFilter('')">
+      <div class="kpi-icon-wrap"><mat-icon>inbox</mat-icon></div>
+      <div><div class="kpi-val">{{ total }}</div><div class="kpi-lbl">Total</div></div>
+    </button>
+    <button class="kpi-pill kpi-attente" [class.kpi-selected]="filterStatut==='EnAttente'" (click)="setFilter('EnAttente')">
+      <div class="kpi-icon-wrap"><mat-icon>hourglass_empty</mat-icon></div>
+      <div><div class="kpi-val">{{ enAttente }}</div><div class="kpi-lbl">En attente</div></div>
+    </button>
+    <button class="kpi-pill kpi-encours" [class.kpi-selected]="filterStatut==='EnCours'" (click)="setFilter('EnCours')">
+      <div class="kpi-icon-wrap"><mat-icon>pending</mat-icon></div>
+      <div><div class="kpi-val">{{ enCours }}</div><div class="kpi-lbl">En cours</div></div>
+    </button>
+    <button class="kpi-pill kpi-resolue" [class.kpi-selected]="filterStatut==='Resolue'" (click)="setFilter('Resolue')">
+      <div class="kpi-icon-wrap"><mat-icon>check_circle</mat-icon></div>
+      <div><div class="kpi-val">{{ resolues }}</div><div class="kpi-lbl">Résolues</div></div>
+    </button>
+  </div>
+
+  <!-- ── Toolbar ── -->
+  <div class="toolbar">
+    <div class="search-bar">
+      <mat-icon class="search-icon">search</mat-icon>
+      <input class="search-input" [(ngModel)]="search" (ngModelChange)="applyFilters()"
+             placeholder="Rechercher par titre, description, auteur…">
+      @if (search) {
+        <button class="clear-btn" (click)="search=''; applyFilters()">
+          <mat-icon>close</mat-icon>
+        </button>
+      }
+    </div>
+    <span class="results-count">{{ displayed.length }} résultat(s)</span>
+  </div>
+
+  <!-- ── Empty state ── -->
+  @if (displayed.length === 0) {
+    <div class="empty-state">
+      <div class="empty-icon-wrap"><mat-icon>inbox</mat-icon></div>
+      <p>Aucune réclamation trouvée</p>
+      <span>{{ search || filterStatut ? 'Modifiez vos filtres de recherche' : 'Aucune réclamation enregistrée pour l\'instant' }}</span>
+      @if (!auth.isAdmin() && !search && !filterStatut) {
+        <button class="btn-primary" style="margin-top:20px" (click)="openForm()">
+          <mat-icon>add</mat-icon> Créer une réclamation
+        </button>
+      }
+    </div>
+  }
+
+  <!-- ── Liste de cartes ── -->
+  <div class="cards-list">
+    @for (r of displayed; track r.id) {
+      <div class="rec-card"
+           [style.--tc]="typeConfig(r).color"
+           [style.--tb]="typeConfig(r).bg"
+           [class.expanded]="expandedId === r.id">
+
+        <!-- ── Header ── -->
+        <div class="rec-header" (click)="toggle(r.id)">
+
+          <div class="rec-type-icon">
+            <mat-icon [style.color]="typeConfig(r).color">{{ typeConfig(r).icon }}</mat-icon>
+          </div>
+
+          <div class="rec-main">
+            <div class="rec-titre">{{ r.titre }}</div>
+            <div class="rec-meta">
+              @if (auth.isAdmin() && r.nomUtilisateur) {
+                <span class="meta-item">
+                  <mat-icon>{{ roleIcon(r.roleUtilisateur) }}</mat-icon>
+                  {{ r.nomUtilisateur }}
+                  <span class="role-chip">{{ r.roleUtilisateur }}</span>
+                </span>
+              }
+              @if (r.referenceLivraison) {
+                <span class="meta-item">
+                  <mat-icon>local_shipping</mat-icon>
+                  {{ r.referenceLivraison }}
+                </span>
+              }
+              <span class="meta-item">
+                <mat-icon>schedule</mat-icon>
+                {{ r.dateCreation | date:'dd/MM/yyyy · HH:mm' }}
+              </span>
+            </div>
+          </div>
+
+          <div class="rec-right">
+            <span class="statut-badge" [class]="statutConfig(r.statut).cls">
+              <mat-icon>{{ statutConfig(r.statut).icon }}</mat-icon>
+              {{ statutConfig(r.statut).label }}
+            </span>
+            <mat-icon class="expand-chevron" [class.rotated]="expandedId === r.id">expand_more</mat-icon>
+          </div>
+        </div>
+
+        <!-- ── Corps expansible ── -->
+        @if (expandedId === r.id) {
+          <div class="rec-body">
+
+            <div class="rec-section">
+              <div class="section-label"><mat-icon>description</mat-icon> Description</div>
+              <p class="rec-desc">{{ r.description }}</p>
+            </div>
+
+            @if (r.referenceLivraison) {
+              <div class="rec-section">
+                <div class="section-label"><mat-icon>local_shipping</mat-icon> Livraison concernée</div>
+                <span class="livraison-ref">{{ r.referenceLivraison }}</span>
+              </div>
+            }
+
+            @if (r.reponseAdmin) {
+              <div class="admin-reply">
+                <div class="reply-header">
+                  <div class="reply-avatar"><mat-icon>support_agent</mat-icon></div>
+                  <div>
+                    <span class="reply-label">Réponse de l'administration</span>
+                    @if (r.dateResolution) {
+                      <span class="reply-date">{{ r.dateResolution | date:'dd/MM/yyyy' }}</span>
+                    }
+                  </div>
+                </div>
+                <p class="reply-text">{{ r.reponseAdmin }}</p>
+              </div>
+            }
+
+            <div class="rec-actions">
+              @if (auth.isAdmin()) {
+                @if (r.statut !== 'Resolue') {
+                  <button class="action-btn btn-reply" (click)="repondre(r)">
+                    <mat-icon>reply</mat-icon> Répondre
+                  </button>
+                  <button class="action-btn btn-status" (click)="changerStatut(r, r.statut === 'EnAttente' ? 'EnCours' : 'Resolue')">
+                    <mat-icon>{{ r.statut === 'EnAttente' ? 'play_circle' : 'check_circle' }}</mat-icon>
+                    {{ r.statut === 'EnAttente' ? 'Prendre en charge' : 'Marquer résolue' }}
+                  </button>
+                } @else {
+                  <span class="resolved-label">
+                    <mat-icon>verified</mat-icon> Traitée et résolue
+                  </span>
+                }
+              } @else {
+                @if (r.statut === 'EnAttente') {
+                  <button class="action-btn btn-edit" (click)="openForm(r)">
+                    <mat-icon>edit</mat-icon> Modifier
+                  </button>
+                  <button class="action-btn btn-del" (click)="supprimer(r)">
+                    <mat-icon>delete_outline</mat-icon> Supprimer
+                  </button>
+                }
+                @if (r.statut === 'Resolue') {
+                  <span class="resolved-label">
+                    <mat-icon>check_circle</mat-icon> Résolue
+                  </span>
+                }
+              }
+            </div>
+
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+</div>

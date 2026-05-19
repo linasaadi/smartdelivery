@@ -5,16 +5,37 @@ import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../../core/services/auth.service';
 
-interface NavItem { label: string; icon: string; route: string; roles?: string[]; }
+interface NavItem {
+  label: string;
+  icon: string;
+  route: string;
+  roles?: string[];
+  dividerBefore?: boolean;
+}
 
 const ALL_ITEMS: NavItem[] = [
-  { label: 'Tableau de bord', icon: 'dashboard',      route: '/dashboard' },
-  { label: 'Livraisons',      icon: 'local_shipping', route: '/livraisons' },
-  { label: 'Tracking',        icon: 'map',             route: '/tracking' },
-  { label: 'Camions',         icon: 'directions_car', route: '/camions',    roles: ['Admin','Dispatcher'] },
-  { label: 'Chauffeurs',      icon: 'person',         route: '/chauffeurs', roles: ['Admin','Dispatcher'] },
-  { label: 'Optimisation',    icon: 'route',          route: '/routes' },
-  { label: 'Rapports',        icon: 'bar_chart',      route: '/rapports',   roles: ['Admin'] },
+  // ── Commun ─────────────────────────────────────────────────────────────────
+  { label: 'Tableau de bord',     icon: 'dashboard',        route: '/dashboard' },
+
+  // ── Admin uniquement ───────────────────────────────────────────────────────
+  { label: 'Utilisateurs',        icon: 'group',            route: '/admin/utilisateurs', roles: ['Admin'], dividerBefore: true },
+  { label: 'Réclamations',        icon: 'report_problem',   route: '/reclamations',       roles: ['Admin'] },
+  { label: 'Rapports',            icon: 'bar_chart',        route: '/rapports',           roles: ['Admin'] },
+
+  // ── Dispatcher uniquement ──────────────────────────────────────────────────
+  { label: 'Livraisons',          icon: 'local_shipping',   route: '/livraisons',         roles: ['Admin', 'Dispatcher'], dividerBefore: true },
+  { label: 'Suivi en temps réel', icon: 'map',              route: '/tracking',           roles: ['Admin', 'Dispatcher'] },
+  { label: 'Camions',             icon: 'directions_car',   route: '/camions',            roles: ['Admin'] },
+  { label: 'Chauffeurs',          icon: 'people',           route: '/chauffeurs',         roles: ['Admin', 'Dispatcher'] },
+  { label: 'Réclamations',        icon: 'report_problem',   route: '/reclamations',       roles: ['Dispatcher'] },
+  { label: 'Rapports',            icon: 'bar_chart',        route: '/rapports',           roles: ['Dispatcher'] },
+
+  // ── Chauffeur uniquement ───────────────────────────────────────────────────
+  { label: 'Mes livraisons',      icon: 'local_shipping',   route: '/mes-livraisons',     roles: ['Chauffeur'], dividerBefore: true },
+  { label: 'Réclamations',        icon: 'report_problem',   route: '/reclamations',       roles: ['Chauffeur'] },
+  { label: 'Rapports',            icon: 'assignment',       route: '/mes-rapports',       roles: ['Chauffeur'] },
+  { label: 'Optimisation trajet', icon: 'route',            route: '/routes',             roles: ['Chauffeur'] },
+  { label: 'Mes camions',         icon: 'directions_car',   route: '/mes-camions',        roles: ['Chauffeur'], dividerBefore: true },
 ];
 
 @Component({

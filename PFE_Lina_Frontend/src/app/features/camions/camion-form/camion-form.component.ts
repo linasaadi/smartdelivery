@@ -12,6 +12,7 @@ import { forkJoin } from 'rxjs';
 
 import { CamionService } from '../../../core/services/camion.service';
 import { ChauffeurService } from '../../../core/services/chauffeur.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { CamionResumeDto, CamionFormDto, ChauffeurDetailDto } from '../../../shared/models';
 
 @Component({
@@ -28,13 +29,17 @@ import { CamionResumeDto, CamionFormDto, ChauffeurDetailDto } from '../../../sha
 export class CamionFormComponent implements OnInit {
   private svc          = inject(CamionService);
   private chauffeurSvc = inject(ChauffeurService);
+  private auth         = inject(AuthService);
   private dialogRef    = inject(MatDialogRef<CamionFormComponent>);
   private cdr          = inject(ChangeDetectorRef);
 
   chauffeurs: ChauffeurDetailDto[] = [];
-  isEdit  = false;
-  loading = false;
-  error   = '';
+  isEdit      = false;
+  loading     = false;
+  error       = '';
+
+  // Vrai si l'utilisateur connecté est un Chauffeur — affectation automatique dans ce cas
+  readonly estChauffeur = this.auth.isChauffeur();
 
   form: CamionFormDto = {
     immatriculation: '', marque: '', modele: '',
@@ -44,6 +49,29 @@ export class CamionFormComponent implements OnInit {
   constructor(@Inject(MAT_DIALOG_DATA) public data: CamionResumeDto | null) {}
 
   ngOnInit() {
+    // Si c'est un Chauffeur, on associe directement au chauffeur connecté
+    if (this.estChauffeur) {
+      const id = this.auth.chauffeurId();
+      if (id) this.form.chauffeurId = id;
+
+      if (this.data) {
+        this.isEdit = true;
+        this.svc.getById(this.data.id).subscribe(detail => {
+          this.form = {
+            immatriculation: detail.immatriculation,
+            marque:          detail.marque,
+            modele:          detail.modele,
+            capaciteKg:      detail.capaciteKg,
+            capaciteM3:      detail.capaciteM3,
+            chauffeurId:     id ?? detail.chauffeur?.id,
+          };
+          this.cdr.markForCheck();
+        });
+      }
+      return;
+    }
+
+    // Admin / Dispatcher : charger la liste des chauffeurs
     const chauffeurs$ = this.chauffeurSvc.getAll();
 
     if (this.data) {
@@ -66,8 +94,20 @@ export class CamionFormComponent implements OnInit {
     }
   }
 
+  majusculesImmat() {
+    this.form = { ...this.form, immatriculation: this.form.immatriculation.toUpperCase() };
+  }
+
   save() {
     this.error = '';
+
+    // Validation frontend avant envoi
+    if (!this.form.immatriculation.trim()) { this.error = "L'immatriculation est obligatoire."; return; }
+    if (!this.form.marque.trim())          { this.error = "La marque est obligatoire."; return; }
+    if (!this.form.modele.trim())          { this.error = "Le modèle est obligatoire."; return; }
+    if (this.form.capaciteKg <= 0)         { this.error = "La capacité en kg doit être supérieure à 0."; return; }
+    if (this.form.capaciteM3 <= 0)         { this.error = "La capacité en m³ doit être supérieure à 0."; return; }
+
     this.loading = true;
     this.cdr.markForCheck();
     const obs = this.isEdit
@@ -77,7 +117,10 @@ export class CamionFormComponent implements OnInit {
       next: () => { this.loading = false; this.dialogRef.close(true); },
       error: (err) => {
         this.loading = false;
-        this.error = err?.statusText ?? 'Une erreur est survenue. Vérifiez les données.';
+        const data = err?.error;
+        if (data?.erreurs?.length)  this.error = data.erreurs[0];
+        else if (data?.message)     this.error = data.message;
+        else                        this.error = 'Une erreur est survenue. Vérifiez les données.';
         this.cdr.markForCheck();
       }
     });

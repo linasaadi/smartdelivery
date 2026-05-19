@@ -1,0 +1,265 @@
+<div class="page-container">
+
+  <!-- En-tête -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Rapports &amp; Alertes</h1>
+      <p class="page-subtitle">Soumettez vos rapports de livraison et signalez des urgences</p>
+    </div>
+  </div>
+
+  @if (loading) {
+    <div class="loading-wrap">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p>Chargement…</p>
+    </div>
+  } @else {
+    <mat-tab-group dynamicHeight animationDuration="200ms">
+
+      <!-- ══════════════════════════════════════════════════════
+           ONGLET 1 : ALERTE URGENCE
+      ══════════════════════════════════════════════════════ -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon class="tab-icon urgent-icon">warning</mat-icon>
+          Alerte urgence
+          @if (livraisonsEnCours.length > 0) {
+            <span class="tab-badge red">{{ livraisonsEnCours.length }}</span>
+          }
+        </ng-template>
+
+        <div class="tab-content">
+          <div class="alert-banner">
+            <mat-icon>emergency</mat-icon>
+            <div>
+              <strong>En cas d'urgence sur la route</strong>
+              <p>Signalez immédiatement tout incident — le dispatcher sera notifié en temps réel.</p>
+            </div>
+          </div>
+
+          @if (livraisonsEnCours.length === 0) {
+            <div class="empty-state">
+              <mat-icon>check_circle</mat-icon>
+              <p>Aucune livraison en cours</p>
+              <span>Les alertes sont disponibles pour les livraisons avec le statut « En cours »</span>
+            </div>
+          } @else {
+            <form [formGroup]="urgenceForm" (ngSubmit)="envoyerAlerte()" class="rapport-form">
+
+              <div class="form-section-title">
+                <mat-icon>local_shipping</mat-icon> Livraison concernée
+              </div>
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Sélectionner la livraison</mat-label>
+                <mat-select formControlName="livraisonId">
+                  @for (l of livraisonsEnCours; track l.id) {
+                    <mat-option [value]="l.id">
+                      {{ l.reference }} — {{ l.destination }}
+                    </mat-option>
+                  }
+                </mat-select>
+                @if (urgenceForm.get('livraisonId')?.hasError('required') && urgenceForm.get('livraisonId')?.touched) {
+                  <mat-error>Sélectionnez une livraison</mat-error>
+                }
+              </mat-form-field>
+
+              <div class="form-section-title">
+                <mat-icon>category</mat-icon> Type d'urgence
+              </div>
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Nature de l'urgence</mat-label>
+                <mat-select formControlName="typeUrgence">
+                  @for (t of typesUrgence; track t) {
+                    <mat-option [value]="t">{{ t }}</mat-option>
+                  }
+                </mat-select>
+                @if (urgenceForm.get('typeUrgence')?.hasError('required') && urgenceForm.get('typeUrgence')?.touched) {
+                  <mat-error>Sélectionnez un type</mat-error>
+                }
+              </mat-form-field>
+
+              <div class="form-section-title">
+                <mat-icon>description</mat-icon> Description
+              </div>
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Décrivez la situation (minimum 10 caractères)</mat-label>
+                <textarea matInput formControlName="description" rows="4"
+                          placeholder="Ex : Panne moteur sur l'autoroute A1, km 45. En attente de dépannage."></textarea>
+                @if (urgenceForm.get('description')?.hasError('required') && urgenceForm.get('description')?.touched) {
+                  <mat-error>La description est obligatoire</mat-error>
+                }
+                @if (urgenceForm.get('description')?.hasError('minlength')) {
+                  <mat-error>Au moins 10 caractères</mat-error>
+                }
+              </mat-form-field>
+
+              <button type="submit" class="btn-urgence-submit" [disabled]="soumettreAlert">
+                @if (soumettreAlert) {
+                  <mat-spinner diameter="18" style="display:inline-block"></mat-spinner>
+                } @else {
+                  <mat-icon>emergency</mat-icon>
+                }
+                Déclencher l'alerte
+              </button>
+            </form>
+          }
+        </div>
+      </mat-tab>
+
+      <!-- ══════════════════════════════════════════════════════
+           ONGLET 2 : RAPPORT DE LIVRAISON
+      ══════════════════════════════════════════════════════ -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon class="tab-icon">assignment_turned_in</mat-icon>
+          Rapport de livraison
+          @if (livraisonsTerminees.length > 0) {
+            <span class="tab-badge green">{{ livraisonsTerminees.length }}</span>
+          }
+        </ng-template>
+
+        <div class="tab-content">
+          <div class="info-banner">
+            <mat-icon>info</mat-icon>
+            <div>
+              <strong>Rapport de fin de mission</strong>
+              <p>Après chaque livraison effectuée, soumettez un rapport pour informer le dispatcher.</p>
+            </div>
+          </div>
+
+          @if (livraisonsTerminees.length === 0) {
+            <div class="empty-state">
+              <mat-icon>local_shipping</mat-icon>
+              <p>Aucune livraison terminée</p>
+              <span>Les rapports sont disponibles pour les livraisons avec le statut « Livrée »</span>
+            </div>
+          } @else {
+            <form [formGroup]="rapportForm" (ngSubmit)="envoyerRapport()" class="rapport-form">
+
+              <div class="form-section-title">
+                <mat-icon>local_shipping</mat-icon> Livraison concernée
+              </div>
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Sélectionner la livraison terminée</mat-label>
+                <mat-select formControlName="livraisonId">
+                  @for (l of livraisonsTerminees; track l.id) {
+                    <mat-option [value]="l.id">
+                      {{ l.reference }} — {{ l.destination }}
+                      @if (l.dateLivraisonReelle) {
+                        ({{ l.dateLivraisonReelle | date:'dd/MM/yyyy' }})
+                      }
+                    </mat-option>
+                  }
+                </mat-select>
+                @if (rapportForm.get('livraisonId')?.hasError('required') && rapportForm.get('livraisonId')?.touched) {
+                  <mat-error>Sélectionnez une livraison</mat-error>
+                }
+              </mat-form-field>
+
+              <div class="form-section-title">
+                <mat-icon>category</mat-icon> Type de retour
+              </div>
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Problème rencontré</mat-label>
+                <mat-select formControlName="typeProbleme">
+                  @for (t of typesProbleme; track t) {
+                    <mat-option [value]="t">{{ t }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+
+              <div class="form-section-title">
+                <mat-icon>notes</mat-icon> Notes de fin de mission
+              </div>
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Décrivez le déroulement (minimum 10 caractères)</mat-label>
+                <textarea matInput formControlName="notes" rows="5"
+                          placeholder="Ex : Livraison effectuée à 14h30. Le client a bien réceptionné la marchandise. Aucun problème notable."></textarea>
+                @if (rapportForm.get('notes')?.hasError('required') && rapportForm.get('notes')?.touched) {
+                  <mat-error>Les notes sont obligatoires</mat-error>
+                }
+                @if (rapportForm.get('notes')?.hasError('minlength')) {
+                  <mat-error>Au moins 10 caractères</mat-error>
+                }
+              </mat-form-field>
+
+              <button type="submit" class="btn-rapport-submit" [disabled]="soumettreRapport">
+                @if (soumettreRapport) {
+                  <mat-spinner diameter="18" style="display:inline-block"></mat-spinner>
+                } @else {
+                  <mat-icon>send</mat-icon>
+                }
+                Soumettre le rapport
+              </button>
+            </form>
+          }
+        </div>
+      </mat-tab>
+
+      <!-- ══════════════════════════════════════════════════════
+           ONGLET 3 : HISTORIQUE
+      ══════════════════════════════════════════════════════ -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon class="tab-icon">history</mat-icon>
+          Historique
+          @if (rapportsEnvoyes.length > 0) {
+            <span class="tab-badge blue">{{ rapportsEnvoyes.length }}</span>
+          }
+        </ng-template>
+
+        <div class="tab-content">
+          @if (rapportsEnvoyes.length === 0) {
+            <div class="empty-state">
+              <mat-icon>inbox</mat-icon>
+              <p>Aucun rapport ou alerte envoyé</p>
+            </div>
+          } @else {
+            <div class="historique-list">
+              @for (r of rapportsEnvoyes; track r.id) {
+                <div class="histo-card" [class.histo-urgence]="isUrgence(r.titre)">
+                  <!-- Icône type -->
+                  <div class="histo-icon" [class.icon-urgence]="isUrgence(r.titre)"
+                       [class.icon-rapport]="!isUrgence(r.titre)">
+                    <mat-icon>{{ isUrgence(r.titre) ? 'warning' : 'assignment' }}</mat-icon>
+                  </div>
+
+                  <!-- Contenu -->
+                  <div class="histo-body">
+                    <div class="histo-titre">{{ r.titre }}</div>
+                    <div class="histo-desc">{{ r.description }}</div>
+                    <div class="histo-meta">
+                      <span class="histo-date">{{ r.dateCreation | date:'dd/MM/yyyy HH:mm' }}</span>
+                      @if (r.referenceLivraison) {
+                        <span class="histo-ref">
+                          <mat-icon style="font-size:12px;vertical-align:middle">local_shipping</mat-icon>
+                          {{ r.referenceLivraison }}
+                        </span>
+                      }
+                    </div>
+                    @if (r.reponseAdmin) {
+                      <div class="histo-reponse">
+                        <mat-icon>reply</mat-icon>
+                        <span>{{ r.reponseAdmin }}</span>
+                      </div>
+                    }
+                  </div>
+
+                  <!-- Statut -->
+                  <div class="histo-statut">
+                    <span class="statut-pill" [style.background]="statutColor(r.statut) + '22'"
+                          [style.color]="statutColor(r.statut)">
+                      {{ statutLabel(r.statut) }}
+                    </span>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </mat-tab>
+
+    </mat-tab-group>
+  }
+
+</div>

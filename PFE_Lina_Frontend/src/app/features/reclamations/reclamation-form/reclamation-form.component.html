@@ -1,0 +1,102 @@
+<!-- ── En-tête dégradé ── -->
+<div class="dialog-header" [style.background]="'linear-gradient(135deg,' + typeActif.color + 'e0,' + typeActif.color + '99)'">
+  <div class="header-icon">
+    <mat-icon>{{ typeActif.icon }}</mat-icon>
+  </div>
+  <div class="header-text">
+    <h2>{{ editMode ? 'Modifier la réclamation' : 'Nouvelle réclamation' }}</h2>
+    <p>{{ editMode ? 'Mettez à jour les informations ci-dessous' : 'Décrivez votre problème en détail' }}</p>
+  </div>
+  <button class="close-btn" (click)="cancel()" matTooltip="Fermer">
+    <mat-icon>close</mat-icon>
+  </button>
+</div>
+
+<!-- ── Corps ── -->
+<div class="dialog-body">
+
+  <!-- Sélecteur de type (création uniquement) -->
+  @if (!editMode) {
+    <div class="field-section">
+      <label class="field-label"><mat-icon>category</mat-icon> Type de réclamation</label>
+      <div class="type-grid">
+        @for (t of types; track t.value) {
+          <button class="type-card" [class.selected]="typeSelec === t.value"
+                  [style.--tc]="t.color" (click)="typeSelec = t.value" type="button">
+            <div class="type-icon-wrap">
+              <mat-icon>{{ t.icon }}</mat-icon>
+            </div>
+            <span class="type-label">{{ t.label }}</span>
+          </button>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Titre -->
+  <div class="field-section">
+    <label class="field-label"><mat-icon>title</mat-icon> Titre <span class="req">*</span></label>
+    <div class="input-wrap">
+      <input class="field-input" [(ngModel)]="titre" maxlength="150"
+             placeholder="Résumé concis de votre réclamation…">
+      <span class="char-count">{{ titre.length }}/150</span>
+    </div>
+    @if (!editMode && titre.trim()) {
+      <div class="title-preview">
+        <mat-icon>visibility</mat-icon>
+        Aperçu&nbsp;: <strong>{{ titreComplet }}</strong>
+      </div>
+    }
+  </div>
+
+  <!-- Description -->
+  <div class="field-section">
+    <label class="field-label"><mat-icon>description</mat-icon> Description <span class="req">*</span></label>
+    <div class="input-wrap">
+      <textarea class="field-textarea" [(ngModel)]="description" maxlength="2000" rows="5"
+                placeholder="Décrivez en détail votre problème (minimum 10 caractères)…"></textarea>
+      <span class="char-count">{{ description.length }}/2000</span>
+    </div>
+  </div>
+
+  <!-- Livraison concernée -->
+  @if (data?.livraisons?.length) {
+    <div class="field-section">
+      <label class="field-label"><mat-icon>local_shipping</mat-icon> Livraison concernée <span class="opt">(optionnel)</span></label>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-select [(ngModel)]="livraisonId">
+          <mat-option [value]="null">Aucune livraison associée</mat-option>
+          @for (l of data.livraisons; track l.id) {
+            <mat-option [value]="l.id">
+              {{ l.reference }} — {{ l.destination }}
+            </mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+  }
+
+  <!-- Erreur -->
+  @if (error) {
+    <div class="error-banner">
+      <mat-icon>error_outline</mat-icon>
+      <span>{{ error }}</span>
+    </div>
+  }
+</div>
+
+<!-- ── Pied de page ── -->
+<div class="dialog-footer">
+  <button class="btn-cancel" (click)="cancel()">
+    <mat-icon>close</mat-icon> Annuler
+  </button>
+  <button class="btn-submit" (click)="save()" [disabled]="loading"
+          [style.background]="'linear-gradient(135deg,' + typeActif.color + ',' + typeActif.color + 'bb)'">
+    @if (loading) {
+      <span class="spinner"></span>
+    } @else {
+      <mat-icon>{{ editMode ? 'save' : 'send' }}</mat-icon>
+    }
+    {{ editMode ? 'Enregistrer' : 'Soumettre' }}
+  </button>
+</div>

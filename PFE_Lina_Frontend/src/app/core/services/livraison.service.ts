@@ -55,4 +55,22 @@ export class LivraisonService {
   getAnomalies(id: number): Observable<any> {
     return this.http.get<any>(`${BASE}/${id}/anomalies`);
   }
+
+  // ── Chauffeur ──────────────────────────────────────────────────────────────
+
+  getMesLivraisons(params: ParametresLivraisons = {}): Observable<PageDonnees<LivraisonResumeDto>> {
+    let qp = new HttpParams()
+      .set('page', String(params.page ?? 1))
+      .set('taillePage', String(params.taillePage ?? 20));
+    if (params.statut) qp = qp.set('statut', params.statut);
+    return this.http.get<PageDonnees<LivraisonResumeDto>>(`${BASE}/mes-livraisons`, { params: qp });
+  }
+
+  accepter(id: number): Observable<void> {
+    return this.http.post<void>(`${BASE}/${id}/accepter`, {});
+  }
+
+  refuser(id: number, raison: string): Observable<void> {
+    return this.http.post<void>(`${BASE}/${id}/refuser`, { raison });
+  }
 }

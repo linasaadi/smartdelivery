@@ -5,6 +5,7 @@ const LIVRAISON_MAP: Record<number, string> = {
   2: 'Livree',
   3: 'Annulee',
   4: 'EnRetard',
+  5: 'Refusee',
 };
 
 const CAMION_MAP: Record<number, string> = {

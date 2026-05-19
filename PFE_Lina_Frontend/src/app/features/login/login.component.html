@@ -1,75 +1,137 @@
-<div class="login-page">
-  <!-- Panneau gauche décoratif -->
-  <div class="login-brand">
-    <div class="brand-content">
-      <div class="brand-logo">
+<div class="auth-wrap">
+
+  <!-- ── Panneau gauche animé ── -->
+  <div class="left-panel">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="grid-overlay"></div>
+
+    <div class="lp-content">
+      <div class="logo-badge">
         <mat-icon>local_shipping</mat-icon>
       </div>
-      <h1>SmartDelivery</h1>
-      <p>Système de gestion et d'optimisation de livraisons pour flotte de camions</p>
-      <div class="brand-features">
-        <div class="feature-item"><mat-icon>route</mat-icon><span>Optimisation des routes</span></div>
-        <div class="feature-item"><mat-icon>gps_fixed</mat-icon><span>Tracking temps réel</span></div>
-        <div class="feature-item"><mat-icon>analytics</mat-icon><span>Rapports & Analytics</span></div>
-        <div class="feature-item"><mat-icon>notifications_active</mat-icon><span>Alertes intelligentes</span></div>
+
+      <h1>Smart<br><span class="gradient-text">Delivery</span></h1>
+      <p class="lp-sub">Système intelligent de gestion et d'optimisation de livraisons</p>
+
+      <div class="stats-row">
+        <div class="stat-item">
+          <span class="stat-val">3</span>
+          <span class="stat-lbl">Rôles</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <span class="stat-val">RT</span>
+          <span class="stat-lbl">Tracking</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <span class="stat-val">AI</span>
+          <span class="stat-lbl">Routes</span>
+        </div>
       </div>
+
+      <div class="feat-list">
+        <div class="feat-item">
+          <div class="feat-num">01</div>
+          <div>
+            <div class="feat-title">Tracking GPS en temps réel</div>
+            <div class="feat-sub">Positions actualisées via WebSocket SignalR</div>
+          </div>
+        </div>
+        <div class="feat-item">
+          <div class="feat-num">02</div>
+          <div>
+            <div class="feat-title">Optimisation des tournées</div>
+            <div class="feat-sub">Algorithme TSP + facteur trafic Tunisie</div>
+          </div>
+        </div>
+        <div class="feat-item">
+          <div class="feat-num">03</div>
+          <div>
+            <div class="feat-title">Détection d'anomalies</div>
+            <div class="feat-sub">Alertes retard, vitesse anormale, ETA dépassée</div>
+          </div>
+        </div>
+        <div class="feat-item">
+          <div class="feat-num">04</div>
+          <div>
+            <div class="feat-title">Dashboard analytique</div>
+            <div class="feat-sub">KPI admin & dispatcher avec cache intelligent</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="lp-footer">© 2026 SmartDelivery · PFE Lina Saadi</div>
     </div>
   </div>
 
-  <!-- Formulaire -->
-  <div class="login-form-panel">
-    <div class="login-form-container">
-      <div class="form-header">
-        <h2>Connexion</h2>
-        <p>Accédez à votre tableau de bord</p>
+  <!-- ── Panneau droit (formulaire) ── -->
+  <div class="right-panel">
+    <div class="form-card">
+
+      <div class="card-head">
+        <div class="card-icon">
+          <mat-icon>waving_hand</mat-icon>
+        </div>
+        <h2>Bon retour !</h2>
+        <p>Connectez-vous à votre espace SmartDelivery</p>
       </div>
 
-      <form (ngSubmit)="submit()" #f="ngForm">
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Adresse email</mat-label>
-          <mat-icon matPrefix>email</mat-icon>
-          <input matInput type="email" [(ngModel)]="email" name="email"
-                 placeholder="exemple@smartdelivery.tn" required autocomplete="email" />
-        </mat-form-field>
+      <form (ngSubmit)="submit()" #f="ngForm" autocomplete="on">
 
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Mot de passe</mat-label>
-          <mat-icon matPrefix>lock</mat-icon>
-          <input matInput [type]="showPass ? 'text' : 'password'"
-                 [(ngModel)]="password" name="password" required autocomplete="current-password" />
-          <button mat-icon-button matSuffix type="button" (click)="showPass = !showPass">
-            <mat-icon>{{ showPass ? 'visibility_off' : 'visibility' }}</mat-icon>
-          </button>
-        </mat-form-field>
+        <div class="field-group">
+          <label for="login-email">Adresse email</label>
+          <div class="field-wrap" [class.has-value]="email">
+            <mat-icon class="fi">mail_outline</mat-icon>
+            <input id="login-email" type="email" [(ngModel)]="email" name="email"
+                   placeholder="exemple@smartdelivery.tn" autocomplete="email" required>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label for="login-pass">Mot de passe</label>
+          <div class="field-wrap" [class.has-value]="password">
+            <mat-icon class="fi">lock_outline</mat-icon>
+            <input id="login-pass" [type]="showPass ? 'text' : 'password'"
+                   [(ngModel)]="password" name="password"
+                   placeholder="Votre mot de passe" autocomplete="current-password" required>
+            <button type="button" class="eye-btn" (click)="showPass = !showPass"
+                    [title]="showPass ? 'Masquer' : 'Afficher'">
+              <mat-icon>{{ showPass ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+          </div>
+        </div>
 
         @if (error()) {
-          <div class="error-banner">
+          <div class="alert-error">
             <mat-icon>error_outline</mat-icon>
             <span>{{ error() }}</span>
           </div>
         }
 
-        <button mat-raised-button color="primary" type="submit"
-                class="submit-btn" [disabled]="loading() || !email || !password">
+        <button type="submit" class="btn-submit"
+                [disabled]="loading() || !email || !password">
           @if (loading()) {
-            <mat-spinner diameter="20" />
-            <span>Connexion en cours...</span>
+            <span class="spin"></span>
+            <span>Connexion en cours…</span>
           } @else {
             <mat-icon>login</mat-icon>
             <span>Se connecter</span>
           }
         </button>
+
       </form>
 
-      <div class="login-hint">
-        <mat-icon>info_outline</mat-icon>
-        <span>Compte admin : <strong>lina.saadi&#64;gmail.com</strong> / <strong>lina</strong></span>
+      <div class="hint-box">
+        <mat-icon>tips_and_updates</mat-icon>
+        <span>Démo admin : <strong>lina.saadi&#64;gmail.com</strong></span>
       </div>
 
-      <div class="register-link">
-        Pas encore de compte ?
-        <a routerLink="/register">Créer un compte</a>
-      </div>
+      <p class="alt-link">Pas encore de compte ?&nbsp;<a routerLink="/register">Créer un compte</a></p>
+
     </div>
   </div>
+
 </div>

@@ -15,10 +15,8 @@ import { forkJoin } from 'rxjs';
 import { LivraisonService } from '../../../core/services/livraison.service';
 import { CamionService } from '../../../core/services/camion.service';
 import { DestinationService } from '../../../core/services/destination.service';
-import { ProduitService } from '../../../core/services/produit.service';
-import { CamionResumeDto, Destination, Produit, CreerLivraisonDto } from '../../../shared/models';
-
-interface LigneProduit { produitId: number; quantite: number; }
+import { ChauffeurService } from '../../../core/services/chauffeur.service';
+import { CamionResumeDto, Destination, ChauffeurResumeDto, CreerLivraisonDto } from '../../../shared/models';
 
 @Component({
   selector: 'app-livraison-form',
@@ -36,43 +34,58 @@ export class LivraisonFormComponent implements OnInit {
   private livraisonSvc = inject(LivraisonService);
   private camionSvc    = inject(CamionService);
   private destSvc      = inject(DestinationService);
-  private produitSvc   = inject(ProduitService);
+  private chauffeurSvc = inject(ChauffeurService);
   private dialogRef    = inject(MatDialogRef<LivraisonFormComponent>);
   private cdr          = inject(ChangeDetectorRef);
 
-  camions: CamionResumeDto[] = [];
-  destinations: Destination[] = [];
-  produits: Produit[] = [];
+  camions:    CamionResumeDto[]    = [];
+  destinations: Destination[]     = [];
+  chauffeurs: ChauffeurResumeDto[] = [];
   loading = false;
   error   = '';
 
+  // Assignation
   camionId?: number;
   destinationId?: number;
   dateLivraisonPrevue: any = '';
   notes = '';
-  lignes: LigneProduit[] = [{ produitId: 0, quantite: 1 }];
+
+  // Produit inline
+  nomProduit          = '';
+  descriptionProduit  = '';
+  poidsKg             = 0;
+  volumeM3            = 0;
+  quantite            = 1;
+  prixUnitaire        = 0;
+
+  // Filtre camions par chauffeur sélectionné
+  chauffeurSelectionneId?: number;
+  get camionsFiltres(): CamionResumeDto[] {
+    if (!this.chauffeurSelectionneId) return this.camions;
+    const nomChauffeur = this.chauffeurs.find(c => c.id === this.chauffeurSelectionneId)?.nomComplet;
+    return this.camions.filter(c => c.nomChauffeur === nomChauffeur);
+  }
 
   constructor(@Inject(MAT_DIALOG_DATA) public data: null) {}
 
   ngOnInit() {
     forkJoin({
-      camions:      this.camionSvc.getAll(),
+      camions:      this.camionSvc.getAvailable(),
       destinations: this.destSvc.getAll(),
-      produits:     this.produitSvc.getAll(),
-    }).subscribe(({ camions, destinations, produits }) => {
+      chauffeurs:   this.chauffeurSvc.getAll(),
+    }).subscribe(({ camions, destinations, chauffeurs }) => {
       this.camions      = camions;
       this.destinations = destinations;
-      this.produits     = produits;
+      this.chauffeurs   = chauffeurs
+        .filter((c: any) => c.estDisponible)
+        .map((c: any) => ({ id: c.id, nomComplet: c.nomComplet ?? `${c.prenom} ${c.nom}`, telephone: c.telephone, estDisponible: c.estDisponible }));
       this.cdr.markForCheck();
     });
   }
 
-  ajouterLigne() {
-    this.lignes = [...this.lignes, { produitId: 0, quantite: 1 }];
-  }
-
-  retirerLigne(i: number) {
-    if (this.lignes.length > 1) this.lignes = this.lignes.filter((_, idx) => idx !== i);
+  onChauffeurChange() {
+    this.camionId = undefined;
+    this.cdr.markForCheck();
   }
 
   save() {
@@ -81,9 +94,12 @@ export class LivraisonFormComponent implements OnInit {
       this.error = 'Camion, destination et date sont obligatoires.';
       return;
     }
-    const lignesValides = this.lignes.filter(l => l.produitId > 0 && l.quantite > 0);
-    if (lignesValides.length === 0) {
-      this.error = 'Ajoutez au moins un produit.';
+    if (!this.nomProduit.trim()) {
+      this.error = 'Le nom du produit est obligatoire.';
+      return;
+    }
+    if (this.quantite < 1) {
+      this.error = 'La quantité doit être au moins 1.';
       return;
     }
 
@@ -95,8 +111,13 @@ export class LivraisonFormComponent implements OnInit {
       camionId:            this.camionId!,
       destinationId:       this.destinationId!,
       dateLivraisonPrevue: date,
+      nomProduit:          this.nomProduit.trim(),
+      descriptionProduit:  this.descriptionProduit || undefined,
+      poidsKg:             this.poidsKg,
+      volumeM3:            this.volumeM3,
+      quantite:            this.quantite,
+      prixUnitaire:        this.prixUnitaire,
       notes:               this.notes || undefined,
-      produits:            lignesValides.map(l => ({ produitId: l.produitId, quantite: l.quantite, nomProduit: null, prixTotal: 0 })),
     };
 
     this.loading = true;
@@ -105,7 +126,7 @@ export class LivraisonFormComponent implements OnInit {
       next: () => { this.loading = false; this.dialogRef.close(true); },
       error: (err) => {
         this.loading = false;
-        this.error = err?.statusText ?? 'Une erreur est survenue.';
+        this.error = err?.error?.message ?? err?.statusText ?? 'Une erreur est survenue.';
         this.cdr.markForCheck();
       }
     });

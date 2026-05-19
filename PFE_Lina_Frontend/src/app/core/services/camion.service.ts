@@ -13,6 +13,10 @@ export class CamionService {
     return this.http.get<CamionResumeDto[]>(BASE);
   }
 
+  getMesCamions(): Observable<CamionResumeDto[]> {
+    return this.http.get<CamionResumeDto[]>(`${BASE}/mes-camions`);
+  }
+
   getAvailable(): Observable<CamionResumeDto[]> {
     return this.http.get<CamionResumeDto[]>(`${BASE}/available`);
   }
